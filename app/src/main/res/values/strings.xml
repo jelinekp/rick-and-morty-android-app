@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Homework 2</string>
+
+    <string name="characters">Characters</string>
+    <string name="favorites">Favorites</string>
+
+    <string name="avatar">Character avatar</string>
+    <string name="name">Name</string>
+    <string name="status">Status</string>
+    <string name="species">Species</string>
+    <string name="type">Type</string>
+    <string name="gender">Gender</string>
+    <string name="origin">Origin</string>
+    <string name="location">Location</string>
+    <string name="favorite">Favorite</string>
+    <string name="search">Search</string>
+</resources>
