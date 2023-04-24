@@ -6,48 +6,45 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import cz.cvut.fit.biand.homework2.presentation.DetailViewModel
-import cz.cvut.fit.biand.homework2.presentation.ListViewModel
-import cz.cvut.fit.biand.homework2.presentation.SearchViewModel
-import cz.cvut.fit.biand.homework2.system.DetailScreen
-import cz.cvut.fit.biand.homework2.system.ListScreen
-import cz.cvut.fit.biand.homework2.system.SearchScreen
+import cz.cvut.fit.biand.homework2.features.characters.presentation.detail.DetailScreen
+import cz.cvut.fit.biand.homework2.features.characters.presentation.list.ListScreen
+import cz.cvut.fit.biand.homework2.features.characters.presentation.search.SearchScreen
 
 @Composable
-fun Navigation(
-    listViewModel: ListViewModel,
-    detailViewModel: DetailViewModel,
-    searchViewModel: SearchViewModel,
-) {
+fun Navigation() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = Screen.ListScreen.route,
+        startDestination = Screens.ListScreen.route,
     ) {
-        composable(route = Screen.ListScreen.route) {
+        composable(route = Screens.ListScreen.route) {
             ListScreen(
-                navController = navController,
-                viewModel = listViewModel,
+                navigateToSearch = { navController.navigate(Screens.SearchScreen.route) },
+                navigateToCharacterDetail = {
+                    navController.navigate(Screens.DetailScreen(it).route)
+                },
             )
         }
+
         composable(
-            route = Screen.DetailScreen.route + "/{id}",
+            route = Screens.DetailScreen("{${Screens.DetailScreen.ID}}").route,
             arguments = listOf(
-                navArgument(name = "id") {
-                    type = NavType.IntType
+                navArgument(name = Screens.DetailScreen.ID) {
+                    type = NavType.StringType
                 },
             ),
-        ) { entry ->
+        ) {
             DetailScreen(
-                navController = navController,
-                viewModel = detailViewModel,
-                id = entry.arguments?.getInt("id"),
+                navigateUp = { navController.navigateUp() },
             )
         }
-        composable(route = Screen.SearchScreen.route) {
+
+        composable(route = Screens.SearchScreen.route) {
             SearchScreen(
-                navController = navController,
-                viewModel = searchViewModel,
+                navigateToCharacterDetail = {
+                    navController.navigate(Screens.DetailScreen(it).route)
+                },
+                navigateUp = { navController.navigateUp() },
             )
         }
     }

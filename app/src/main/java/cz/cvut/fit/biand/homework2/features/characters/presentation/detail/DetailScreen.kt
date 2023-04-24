@@ -1,6 +1,5 @@
-package cz.cvut.fit.biand.homework2.system
+package cz.cvut.fit.biand.homework2.features.characters.presentation.detail
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,15 +10,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,43 +24,42 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import cz.cvut.fit.biand.homework2.R
-import cz.cvut.fit.biand.homework2.model.Character
-import cz.cvut.fit.biand.homework2.presentation.DetailViewModel
-import cz.cvut.fit.biand.homework2.ui.theme.Blue
-import cz.cvut.fit.biand.homework2.ui.theme.Gray
+import cz.cvut.fit.biand.homework2.features.characters.data.db.DbCharacter
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun DetailScreen(
-    navController: NavController,
-    viewModel: DetailViewModel = DetailViewModel(),
-    id: Int?,
+    viewModel: CharacterDetailViewModel = koinViewModel(),
+    navigateUp: () -> Unit,
 ) {
-    val character by viewModel.character.collectAsState()
-    val favorite by viewModel.favorite.collectAsState()
-    LaunchedEffect(Unit) {
-        id?.let {
-            viewModel.getCharacter(id)
-        }
-    }
-
+    val screenState by viewModel.screenStateStream.collectAsStateWithLifecycle()
+    
+    DetailScreen(screenState = screenState, navigateUp = navigateUp)
+}
+@Composable
+private fun DetailScreen(
+    screenState: CharacterDetailScreenState,
+    navigateUp: () -> Unit,
+) {
     DetailScreenContent(
-        character = character,
-        favorite = favorite,
-        onFavorite = viewModel::onFavoriteClick,
-        onNavigateBack = { navController.popBackStack() },
+        dbCharacter = screenState.character,
+        onNavigateBack = navigateUp,
+        /*favorite = favorite,
+        onFavorite = viewModel::onFavoriteClick,*/
     )
 }
 
 @Composable
-fun DetailScreenContent(
-    character: Character?,
-    favorite: Boolean,
-    onFavorite: () -> Unit,
+private fun DetailScreenContent(
+    dbCharacter: DbCharacter?,
     onNavigateBack: () -> Unit,
+    favorite: Boolean = false,
+    onFavorite: () -> Unit = {},
 ) {
-    character?.let {
+    dbCharacter?.let {
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -76,7 +72,7 @@ fun DetailScreenContent(
                         }
                     },
                     title = {
-                        Text(text = character.name)
+                        Text(text = dbCharacter.name)
                     },
                     actions = {
                         IconButton(onClick = onFavorite) {
@@ -88,7 +84,7 @@ fun DetailScreenContent(
                                         id = R.drawable.ic_favorites,
                                     )
                                 },
-                                tint = Blue,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                 contentDescription = "Favourite navigation icon",
                             )
                         }
@@ -98,7 +94,7 @@ fun DetailScreenContent(
         ) {
             Column(modifier = Modifier.padding(it)) {
                 CharacterDetail(
-                    character,
+                    dbCharacter,
                 )
             }
         }
@@ -106,17 +102,17 @@ fun DetailScreenContent(
 }
 
 @Composable
-fun CharacterDetail(character: Character) {
+private fun CharacterDetail(dbCharacter: DbCharacter) {
     Column(
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(modifier = Modifier.padding(all = 16.dp)) {
-            Image(
-                painter = painterResource(character.imageRes),
+            AsyncImage(
+                model = dbCharacter.imageUrl,
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
                     .size(150.dp),
-                contentDescription = "Image",
+                contentDescription = "Image"
             )
             Column(
                 modifier = Modifier
@@ -128,18 +124,18 @@ fun CharacterDetail(character: Character) {
             ) {
                 Text(
                     text = stringResource(R.string.name),
-                    style = MaterialTheme.typography.body1,
+                    style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
                     modifier = Modifier.padding(top = 16.dp),
-                    text = character.name,
-                    style = MaterialTheme.typography.h5,
+                    text = dbCharacter.name,
+                    style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                 )
             }
         }
         Divider(
-            color = Gray,
+            color = MaterialTheme.colorScheme.outline,
             modifier = Modifier
                 .padding(top = 16.dp)
                 .fillMaxWidth()
@@ -150,29 +146,30 @@ fun CharacterDetail(character: Character) {
                 .fillMaxWidth()
                 .padding(start = 16.dp),
         ) {
-            Information(title = stringResource(R.string.status), value = character.status)
-            Information(title = stringResource(R.string.species), value = character.species)
-            Information(title = stringResource(R.string.type), value = character.type)
-            Information(title = stringResource(R.string.gender), value = character.gender)
-            Information(title = stringResource(R.string.origin), value = character.origin)
-            Information(title = stringResource(R.string.location), value = character.location)
+            Information(title = stringResource(R.string.status), value = dbCharacter.status)
+            Information(title = stringResource(R.string.species), value = dbCharacter.species)
+            Information(title = stringResource(R.string.type), value = dbCharacter.type)
+            Information(title = stringResource(R.string.gender), value = dbCharacter.gender)
+            Information(title = stringResource(R.string.origin), value = dbCharacter.origin)
+            Information(title = stringResource(R.string.location), value = dbCharacter.location)
         }
     }
 }
 
+
 @Composable
-fun Information(title: String, value: String) {
+private fun Information(title: String, value: String) {
     Column(
         modifier = Modifier.padding(top = 16.dp),
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.body1,
+            style = MaterialTheme.typography.bodyMedium,
         )
         Text(
             modifier = Modifier.fillMaxWidth(0.5F),
             text = value,
-            style = MaterialTheme.typography.h6,
+            style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.ExtraBold,
         )
     }

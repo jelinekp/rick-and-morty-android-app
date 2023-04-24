@@ -1,9 +1,11 @@
-package cz.cvut.fit.biand.homework2.system
+package cz.cvut.fit.biand.homework2.features.characters.presentation.list
 
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,12 +18,13 @@ import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -32,35 +35,46 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import cz.cvut.fit.biand.homework2.R
-import cz.cvut.fit.biand.homework2.model.Character
-import cz.cvut.fit.biand.homework2.navigation.Screen
-import cz.cvut.fit.biand.homework2.presentation.ListViewModel
-import cz.cvut.fit.biand.homework2.ui.theme.Blue
+import cz.cvut.fit.biand.homework2.features.characters.data.CharactersResult
+import cz.cvut.fit.biand.homework2.features.characters.data.db.DbCharacter
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ListScreen(
-    navController: NavController,
-    viewModel: ListViewModel = ListViewModel(),
+    viewModel: ListViewModel = koinViewModel(),
+    navigateToCharacterDetail: (id: String) -> Unit,
+    navigateToSearch: () -> Unit,
 ) {
-    val characters by viewModel.characters.collectAsState()
+    val screenState by viewModel.screenStateStream.collectAsStateWithLifecycle()
+
+    ListScreen(
+        screenState = screenState,
+        navigateToCharacterDetail = navigateToCharacterDetail,
+        navigateToSearch = navigateToSearch,
+    )
+}
+
+@Composable
+private fun ListScreen(
+    screenState: ListScreenState,
+    navigateToCharacterDetail: (id: String) -> Unit,
+    navigateToSearch: () -> Unit,
+) {
     ListScreenContent(
-        characters = characters,
-        onSearchClicked = {
-            navController.navigate(Screen.SearchScreen.route)
-        },
-        onCharacterClicked = {
-            navController.navigate(Screen.DetailScreen.route + "/$it")
-        },
+        screenState = screenState,
+        onSearchClicked = navigateToSearch,
+        navigateToCharacterDetail = navigateToCharacterDetail,
     )
 }
 
 @Composable
 fun ListScreenContent(
-    characters: List<Character>,
+    screenState: ListScreenState,
     onSearchClicked: () -> Unit,
-    onCharacterClicked: (Int) -> Unit,
+    navigateToCharacterDetail: (id: String) -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
 
@@ -69,7 +83,9 @@ fun ListScreenContent(
             TopAppBar(
                 title = {
                     Row(
-                        modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(focusRequester),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -90,19 +106,66 @@ fun ListScreenContent(
         bottomBar = {
             BottomBar()
         },
-    ) {
-        LazyColumn(
+    ) { paddingValues ->
+        Column(
             modifier = Modifier
+                .padding(paddingValues)
                 .fillMaxSize()
-                .padding(it),
         ) {
-            items(characters) { character ->
-                CharacterListItem(
-                    character = character,
-                    onCharacterClicked = onCharacterClicked,
+            when (screenState) {
+                is ListScreenState.Loading -> LoadingState()
+                is ListScreenState.Loaded -> LoadedState(
+                    charactersResult = screenState.charactersResult,
+                    onCharacterClick = { navigateToCharacterDetail(it.id) }
                 )
             }
         }
+    }
+}
+
+@Composable
+fun LoadingState() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+fun LoadedState(charactersResult: CharactersResult, onCharacterClick: (DbCharacter) -> Unit) {
+    Column(Modifier.fillMaxSize()) {
+        OutdatedDataBanner(show = !charactersResult.isSuccess)
+        Characters(characters = charactersResult.characters, onCharacterClicked = onCharacterClick)
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun Characters(
+    characters: List<DbCharacter>,
+    onCharacterClicked: (DbCharacter) -> Unit,
+) {
+    LazyColumn(
+        contentPadding = PaddingValues(all = 8.dp)
+    ) {
+        items(characters, key = { it.id }) { character ->
+            CharacterListItem(
+                dbCharacter = character,
+                onCharacterClicked = onCharacterClicked,
+            )
+        }
+    }
+}
+
+@Composable
+private fun OutdatedDataBanner(show: Boolean) {
+    if (show) {
+        androidx.compose.material3.Text(
+            text = stringResource(R.string.outdated_data_message),
+            modifier = Modifier
+                .background(color = MaterialTheme.colorScheme.errorContainer)
+                .fillMaxWidth()
+                .padding(16.dp),
+        )
     }
 }
 
@@ -113,7 +176,7 @@ fun BottomBar() {
             label = {
                 Text(
                     text = stringResource(id = R.string.characters),
-                    color = Blue,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             },
             onClick = {},
@@ -121,7 +184,7 @@ fun BottomBar() {
             icon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_characters),
-                    tint = Blue,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     contentDescription = "Favourite navigation icon",
                 )
             },
@@ -146,14 +209,14 @@ fun BottomBar() {
 
 @Composable
 fun CharacterListItem(
-    character: Character,
-    onCharacterClicked: (Int) -> Unit,
+    dbCharacter: DbCharacter,
+    onCharacterClicked: (DbCharacter) -> Unit,
 ) {
     Card(
         modifier = Modifier
             .padding(start = 8.dp, end = 8.dp, top = 8.dp)
             .clickable {
-                onCharacterClicked(character.id)
+                onCharacterClicked(dbCharacter)
             },
         elevation = 12.dp,
         shape = RoundedCornerShape(16.dp),
@@ -163,12 +226,12 @@ fun CharacterListItem(
                 .fillMaxWidth()
                 .padding(all = 8.dp),
         ) {
-            Image(
-                painter = painterResource(character.imageRes),
-                contentDescription = "Character avatar",
+            AsyncImage(
+                model = dbCharacter.imageUrl,
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
                     .size(64.dp),
+                contentDescription = "Character avatar"
             )
             Column(
                 modifier = Modifier
@@ -180,11 +243,11 @@ fun CharacterListItem(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = character.name,
-                        style = MaterialTheme.typography.h6,
+                        text = dbCharacter.name,
+                        style = MaterialTheme.typography.headlineSmall,
                     )
                 }
-                Text(text = character.status)
+                Text(text = dbCharacter.status)
             }
         }
     }

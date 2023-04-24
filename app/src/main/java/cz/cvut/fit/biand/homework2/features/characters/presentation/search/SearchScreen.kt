@@ -1,10 +1,9 @@
-package cz.cvut.fit.biand.homework2.system
+package cz.cvut.fit.biand.homework2.features.characters.presentation.search
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.LocalContentAlpha
@@ -27,40 +26,39 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavController
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.cvut.fit.biand.homework2.R
-import cz.cvut.fit.biand.homework2.model.Character
-import cz.cvut.fit.biand.homework2.navigation.Screen
-import cz.cvut.fit.biand.homework2.presentation.SearchViewModel
+import cz.cvut.fit.biand.homework2.features.characters.presentation.list.LoadedState
+import cz.cvut.fit.biand.homework2.features.characters.presentation.list.LoadingState
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SearchScreen(
-    navController: NavController,
-    viewModel: SearchViewModel = SearchViewModel(),
+    navigateToCharacterDetail: (id: String) -> Unit,
+    navigateUp: () -> Unit,
+    viewModel: SearchViewModel = koinViewModel(),
 ) {
-    val characters by viewModel.characters.collectAsState()
     val searchedText by viewModel.searchText.collectAsState()
+    val screenState by viewModel.screenStateStream.collectAsStateWithLifecycle()
 
     SearchScreenContent(
-        onNavigateBack = { navController.popBackStack() },
+        onNavigateBack = navigateUp,
         searchedText = searchedText,
-        characters = characters,
+        screenState = screenState,
         onSearch = viewModel::searchCharacters,
         onClear = viewModel::clearText,
-        onCharacterClicked = {
-            navController.navigate(Screen.DetailScreen.route + "/$it")
-        },
+        onCharacterClicked = navigateToCharacterDetail,
     )
 }
 
 @Composable
-fun SearchScreenContent(
+private fun SearchScreenContent(
     searchedText: String,
-    characters: List<Character>,
+    screenState: SearchScreenState,
     onNavigateBack: () -> Unit,
     onSearch: (String) -> Unit,
     onClear: () -> Unit,
-    onCharacterClicked: (Int) -> Unit,
+    onCharacterClicked: (id: String) -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -82,12 +80,17 @@ fun SearchScreenContent(
                 },
             )
         },
-    ) {
-        LazyColumn(modifier = Modifier.fillMaxSize().padding(it)) {
-            items(characters) { character ->
-                CharacterListItem(
-                    character = character,
-                    onCharacterClicked = onCharacterClicked,
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+        ) {
+            when (screenState) {
+                is SearchScreenState.Loading -> LoadingState()
+                is SearchScreenState.Loaded -> LoadedState(
+                    charactersResult = screenState.charactersResult,
+                    onCharacterClick = { onCharacterClicked(it.id) }
                 )
             }
         }
