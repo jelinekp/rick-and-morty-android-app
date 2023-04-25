@@ -24,5 +24,8 @@ data class DbCharacter(
     val location: String,
 
     @ColumnInfo(name = "image_url")
-    val imageUrl: String
+    val imageUrl: String,
+
+    @ColumnInfo(name = "is_favorite")
+    val isFavorite: Boolean,
 )

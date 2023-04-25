@@ -31,11 +31,11 @@ class SearchViewModel(
     fun searchCharacters(name: String) {
         searchText.value = name
         viewModelScope.launch {
-            characterRepository.getCharactersByName(name.lowercase())
+            characterRepository.getApiCharactersByName(name.lowercase())
             if (name.isBlank()) {
                 _screenStateStream.value = _screenStateStream.value
             } else {
-                _screenStateStream.value = SearchScreenState.Loaded(characterRepository.getCharactersByName(name))
+                _screenStateStream.value = SearchScreenState.Loaded(characterRepository.getApiCharactersByName(name))
             }
         }
     }
@@ -50,6 +50,8 @@ sealed interface SearchScreenState {
 
     object Loading : SearchScreenState
 
-    data class Loaded(val charactersResult: CharactersResult) : SearchScreenState
+    data class Loaded(
+        val charactersResult: CharactersResult,
+        ) : SearchScreenState
 }
 
