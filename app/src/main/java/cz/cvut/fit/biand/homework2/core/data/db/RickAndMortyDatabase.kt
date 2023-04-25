@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import cz.cvut.fit.biand.homework2.features.characters.data.db.DbCharacter
 import cz.cvut.fit.biand.homework2.features.characters.data.db.CharacterDao
 
-@Database(entities = [DbCharacter::class], version = 3)
+@Database(entities = [DbCharacter::class], version = 4)
 abstract class RickAndMortyDatabase : RoomDatabase() {
 
     abstract fun characterDao(): CharacterDao

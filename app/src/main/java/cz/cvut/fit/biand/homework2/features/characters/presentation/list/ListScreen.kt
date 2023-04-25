@@ -2,27 +2,24 @@ package cz.cvut.fit.biand.homework2.features.characters.presentation.list
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.Card
+import androidx.compose.material3.Card
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CardDefaults.cardElevation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,8 +35,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import cz.cvut.fit.biand.homework2.R
-import cz.cvut.fit.biand.homework2.features.characters.data.CharactersResult
 import cz.cvut.fit.biand.homework2.features.characters.data.db.DbCharacter
+import cz.cvut.fit.biand.homework2.features.characters.presentation.common.LoadedState
+import cz.cvut.fit.biand.homework2.features.characters.presentation.common.LoadingState
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -63,49 +61,20 @@ private fun ListScreen(
     navigateToCharacterDetail: (id: String) -> Unit,
     navigateToSearch: () -> Unit,
 ) {
-    ListScreenContent(
-        screenState = screenState,
-        onSearchClicked = navigateToSearch,
-        navigateToCharacterDetail = navigateToCharacterDetail,
-    )
-}
-
-@Composable
-fun ListScreenContent(
-    screenState: ListScreenState,
-    onSearchClicked: () -> Unit,
-    navigateToCharacterDetail: (id: String) -> Unit,
-) {
     val focusRequester = remember { FocusRequester() }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(focusRequester),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(text = stringResource(id = R.string.characters))
-                        Icon(
-                            modifier = Modifier
-                                .padding(start = 8.dp, end = 24.dp)
-                                .clickable {
-                                    onSearchClicked()
-                                },
-                            painter = painterResource(id = R.drawable.ic_search),
-                            contentDescription = "Search",
-                        )
-                    }
-                },
+            ListTopBar(
+                title = stringResource(id = R.string.characters),
+                searchIconAction = navigateToSearch,
+                modifier = Modifier.focusRequester(focusRequester)
             )
         },
         bottomBar = {
             BottomBar()
         },
+        backgroundColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -116,6 +85,7 @@ fun ListScreenContent(
                 is ListScreenState.Loading -> LoadingState()
                 is ListScreenState.Loaded -> LoadedState(
                     charactersResult = screenState.charactersResult,
+                    errorText = stringResource(R.string.outdated_data_message),
                     onCharacterClick = { navigateToCharacterDetail(it.id) }
                 )
             }
@@ -124,70 +94,54 @@ fun ListScreenContent(
 }
 
 @Composable
-fun LoadingState() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
-    }
-}
-
-@Composable
-fun LoadedState(charactersResult: CharactersResult, onCharacterClick: (DbCharacter) -> Unit) {
-    Column(Modifier.fillMaxSize()) {
-        OutdatedDataBanner(show = !charactersResult.isSuccess)
-        Characters(characters = charactersResult.characters, onCharacterClicked = onCharacterClick)
-    }
-}
-
-@Composable
-@OptIn(ExperimentalMaterial3Api::class)
-private fun Characters(
-    characters: List<DbCharacter>,
-    onCharacterClicked: (DbCharacter) -> Unit,
+fun ListTopBar(
+    title: String?,
+    searchIconAction: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    LazyColumn(
-        contentPadding = PaddingValues(all = 8.dp)
-    ) {
-        items(characters, key = { it.id }) { character ->
-            CharacterListItem(
-                dbCharacter = character,
-                onCharacterClicked = onCharacterClicked,
+    TopAppBar(
+        elevation = 10.dp,
+        backgroundColor = MaterialTheme.colorScheme.background,
+        title = { Text(
+            text = title ?: "",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground
+        ) },
+        navigationIcon = null,
+        actions = { IconButton(onClick = searchIconAction) {
+            Icon(
+                painter =  painterResource(id = R.drawable.ic_search),
+                contentDescription = stringResource(R.string.searchIcon),
+                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.onBackground
             )
         }
-    }
+        },
+        //modifier = Modifier.height(48.dp)
+    )
 }
 
 @Composable
-private fun OutdatedDataBanner(show: Boolean) {
-    if (show) {
-        androidx.compose.material3.Text(
-            text = stringResource(R.string.outdated_data_message),
-            modifier = Modifier
-                .background(color = MaterialTheme.colorScheme.errorContainer)
-                .fillMaxWidth()
-                .padding(16.dp),
-        )
-    }
-}
-
-@Composable
-fun BottomBar() {
-    BottomNavigation() {
+private fun BottomBar() {
+    BottomNavigation(
+        modifier = Modifier
+            .height(56.dp)
+            .clip(RoundedCornerShape(8.dp, 8.dp, 0.dp, 0.dp)),
+        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+        elevation = 4.dp
+    ) {
         BottomNavigationItem(
             label = {
-                Text(
-                    text = stringResource(id = R.string.characters),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                )
+                Text(text = stringResource(id = R.string.characters), style = MaterialTheme.typography.bodyMedium)
             },
             onClick = {},
             selected = true,
-            icon = {
-                Icon(
+            icon = { Icon(
                     painter = painterResource(id = R.drawable.ic_characters),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    contentDescription = "Favourite navigation icon",
-                )
-            },
+                    contentDescription = stringResource(R.string.characters_navigation_icon),
+                ) },
+            selectedContentColor = MaterialTheme.colorScheme.primary,
+            unselectedContentColor = MaterialTheme.colorScheme.outline
         )
         BottomNavigationItem(
             label = {
@@ -200,13 +154,16 @@ fun BottomBar() {
             icon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_favorites_filled),
-                    contentDescription = "Favourite navigation icon",
+                    contentDescription = stringResource(R.string.favourite_navigation_icon),
                 )
             },
+            selectedContentColor = MaterialTheme.colorScheme.primary,
+            unselectedContentColor = MaterialTheme.colorScheme.outline
         )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CharacterListItem(
     dbCharacter: DbCharacter,
@@ -214,41 +171,58 @@ fun CharacterListItem(
 ) {
     Card(
         modifier = Modifier
-            .padding(start = 8.dp, end = 8.dp, top = 8.dp)
             .clickable {
                 onCharacterClicked(dbCharacter)
             },
-        elevation = 12.dp,
+        elevation = cardElevation(2.dp),
         shape = RoundedCornerShape(16.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(all = 8.dp),
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            AsyncImage(
-                model = dbCharacter.imageUrl,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .size(64.dp),
-                contentDescription = "Character avatar"
-            )
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(all = 8.dp),
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = dbCharacter.name,
-                        style = MaterialTheme.typography.headlineSmall,
-                    )
-                }
-                Text(text = dbCharacter.status)
-            }
+            CharacterCardContent(dbCharacter = dbCharacter)
         }
+    }
+}
+
+@Composable
+fun CharacterCardContent(dbCharacter: DbCharacter) {
+    AsyncImage(
+        model = dbCharacter.imageUrl,
+        modifier = Modifier
+            .padding(8.dp)
+            .size(48.dp)
+            .clip(RoundedCornerShape(8.dp)),
+        contentDescription = stringResource(id = R.string.avatarWithName,dbCharacter.name)
+    )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(all = 10.dp),
+    ) {
+        Row {
+            Text(text = dbCharacter.name, style = MaterialTheme.typography.titleSmall)
+            FavoriteIcon(dbCharacter.isFavorite)
+        }
+        Text(text = dbCharacter.status, style = MaterialTheme.typography.displayMedium)
+    }
+}
+
+@Composable
+fun FavoriteIcon(
+    isFavorite: Boolean
+) {
+    if (isFavorite) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_favorites_filled),
+            contentDescription = stringResource(id = R.string.characterIsInFavorites),
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .padding(start = 5.dp, top = 5.dp)
+                .size(14.dp)
+        )
     }
 }
