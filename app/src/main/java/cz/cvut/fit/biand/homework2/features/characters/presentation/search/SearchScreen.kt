@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -13,7 +12,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.TopAppBar
@@ -33,7 +32,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -95,6 +93,7 @@ private fun SearchScreenContent(
                 //modifier = Modifier.height(48.dp)
             )
         },
+        backgroundColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -134,7 +133,7 @@ private fun SearchTopBarTitle(
         value = text,
         onValueChange = onSearchTextChanged,
         placeholder = {
-            Box() {
+            Box {
                 Text(
                     text = stringResource(R.string.search),
                     style = MaterialTheme.typography.bodyLarge,
@@ -154,6 +153,7 @@ private fun SearchTopBarTitle(
             unfocusedIndicatorColor = Color.Transparent,
             backgroundColor = Color.Transparent,
             cursorColor = LocalContentColor.current.copy(alpha = LocalContentAlpha.current),
+            textColor = MaterialTheme.colorScheme.onBackground
         ),
         trailingIcon = {
             IconButton(onClick = {

@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cz.cvut.fit.biand.homework2.features.characters.data.CharacterRepository
 import cz.cvut.fit.biand.homework2.features.characters.data.CharactersResult
+import cz.cvut.fit.biand.homework2.features.characters.data.db.DbCharacter
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -18,7 +20,8 @@ class ListViewModel(
     init {
         viewModelScope.launch {
             val result = characterRepository.getCharacters()
-            _screenStateStream.value = ListScreenState.Loaded(result)
+            val favoriteCharacters = characterRepository.getFavoriteCharacters()
+            _screenStateStream.value = ListScreenState.Loaded(result, favoriteCharacters)
         }
     }
 }
@@ -26,5 +29,6 @@ class ListViewModel(
 sealed interface ListScreenState {
     object Loading : ListScreenState
 
-    data class Loaded(val charactersResult: CharactersResult) : ListScreenState
+    data class Loaded(val charactersResult: CharactersResult, val favoriteCharacters: Flow<List<DbCharacter>>) : ListScreenState
+
 }

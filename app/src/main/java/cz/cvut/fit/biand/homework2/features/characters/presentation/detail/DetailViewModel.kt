@@ -1,6 +1,5 @@
 package cz.cvut.fit.biand.homework2.features.characters.presentation.detail
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -21,23 +20,18 @@ class CharacterDetailViewModel(
     private val _screenStateStream = MutableStateFlow(CharacterDetailScreenState())
     val screenStateStream get() = _screenStateStream.asStateFlow()
 
-    private val emptyCharacter = DbCharacter("0", "666", "", "", "", "", "", "", "", false)
-
     init {
         viewModelScope.launch {
             val characterId: String = savedStateHandle[Screens.DetailScreen.ID] ?: throw NullPointerException("Character is missing")
             val character = characterRepository.getCharacter(characterId)
             character.collect {dbCharacter ->
                 _screenStateStream.update {screenStateStream ->
-                    Log.d("Updated Character", dbCharacter.toString())
-                    // it.copy(character = character.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyCharacter).value)
+                    // Log.d("Updated Character", dbCharacter.toString())
                     screenStateStream.copy(character = dbCharacter)
                 }
             }
         }
     }
-
-    //val favorite: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     fun onFavoriteClick() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -45,7 +39,6 @@ class CharacterDetailViewModel(
                 characterRepository.updateFavorite(it.id, !it.isFavorite)
             }
         }
-        //favorite.value = !favorite.value
     }
 }
 

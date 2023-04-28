@@ -29,3 +29,5 @@ data class DbCharacter(
     @ColumnInfo(name = "is_favorite")
     val isFavorite: Boolean,
 )
+
+val emptyCharacter = DbCharacter("666", "Empty Character", "Not saved in local database", "", "", "", "", "", "", false)

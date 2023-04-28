@@ -32,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import cz.cvut.fit.biand.homework2.R
 import cz.cvut.fit.biand.homework2.features.characters.data.db.DbCharacter
+import cz.cvut.fit.biand.homework2.features.characters.data.db.emptyCharacter
 import cz.cvut.fit.biand.homework2.features.characters.presentation.common.BackIcon
 import org.koin.androidx.compose.koinViewModel
 
@@ -41,7 +42,7 @@ fun DetailScreen(
     navigateUp: () -> Unit,
 ) {
     val screenState by viewModel.screenStateStream.collectAsStateWithLifecycle()
-    
+
     DetailScreen(
         dbCharacter = screenState.character,
         onNavigateBack = navigateUp,
@@ -55,15 +56,15 @@ private fun DetailScreen(
     onNavigateBack: () -> Unit,
     onFavorite: () -> Unit = {},
 ) {
-    dbCharacter?.let {
-        Scaffold(
-            topBar = {
-                DetailTopBar(title = dbCharacter.name, favorite = dbCharacter.isFavorite, onNavigateBack = onNavigateBack, onFavorite = onFavorite)
-            },
-            backgroundColor = MaterialTheme.colorScheme.background
-        ) { paddingValues ->
-            CharacterDetailCard(dbCharacter, paddingValues)
-        }
+    val character = dbCharacter ?: emptyCharacter
+
+    Scaffold(
+        topBar = {
+            DetailTopBar(title = character.name, favorite = character.isFavorite, onNavigateBack = onNavigateBack, onFavorite = onFavorite)
+        },
+        backgroundColor = MaterialTheme.colorScheme.background
+    ) { paddingValues ->
+        CharacterDetailCard(character, paddingValues)
     }
 }
 
@@ -87,6 +88,7 @@ private fun DetailScreen(
         actions = {
             FavoriteIcon(favoriteIconAction = onFavorite, isFavorite = favorite)
         },
+        modifier = modifier
     )
 }
 
@@ -132,7 +134,8 @@ private fun CharacterDetailCard(dbCharacter: DbCharacter, paddingValues: Padding
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .padding(16.dp),
-                    contentDescription = stringResource(R.string.image)
+                    contentDescription = stringResource(R.string.image),
+                    error = painterResource(id = R.drawable.ic_launcher_foreground)
                 )
                 CharacterTitle(title = dbCharacter.name)
             }
@@ -164,7 +167,9 @@ fun CharacterTitle(
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(top = 14.dp).fillMaxWidth(0.7F)
+            modifier = Modifier
+                .padding(top = 14.dp)
+                .fillMaxWidth(0.7F)
         )
     }
 }

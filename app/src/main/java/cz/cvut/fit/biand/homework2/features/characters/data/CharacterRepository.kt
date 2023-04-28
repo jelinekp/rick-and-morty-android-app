@@ -1,9 +1,7 @@
 package cz.cvut.fit.biand.homework2.features.characters.data
 
-import android.util.Log
 import cz.cvut.fit.biand.homework2.features.characters.data.db.DbCharacter
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOf
 
 class CharacterRepository(
@@ -14,16 +12,14 @@ class CharacterRepository(
     suspend fun getCharacters(): CharactersResult {
         return try {
             val characters = characterRemoteDataSource.getCharacters()
-            characterLocalDataSource.deleteAll()
-            val localCharacters = characters.map {
-                Log.d("Is character favorite", characterLocalDataSource.isCharacterFavorite(it.id.toString()).toString())
+            val charactersWithFavorites = characters.map {
+                // Log.d("Is character favorite", characterLocalDataSource.isCharacterFavorite(it.id.toString()).toString())
                 it.toDbCharacter(characterLocalDataSource.isCharacterFavorite(it.id.toString()))
             }
-            characterLocalDataSource.insert(localCharacters)
-            CharactersResult(flowOf(localCharacters), isSuccess = true)
+            characterLocalDataSource.deleteAll()
+            characterLocalDataSource.insert(charactersWithFavorites)
+            CharactersResult(characterLocalDataSource.getCharacters(), isSuccess = true) // TODO: replace characterLocalDataSource.getCharacters() with a flow of "charactersWithFavorites"
         } catch (t: Throwable) {
-            // Log.d("Remote fetch failed", "${t.message}") // TODO remove
-            //throw Exception(t.message)
             CharactersResult(characterLocalDataSource.getCharacters(), isSuccess = false)
         }
     }
