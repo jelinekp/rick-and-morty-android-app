@@ -28,7 +28,7 @@ data class ApiCharacter(
         val url: String,
     )
 
-    fun toDbCharacter(isFavorite: Boolean): DbCharacter {
+    fun toDbCharacter(isFavorite: Boolean = false): DbCharacter {
         return DbCharacter(
             id = id.toString(),
             name = name,

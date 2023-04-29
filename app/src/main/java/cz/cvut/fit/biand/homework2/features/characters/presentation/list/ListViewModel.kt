@@ -29,6 +29,9 @@ class ListViewModel(
 sealed interface ListScreenState {
     object Loading : ListScreenState
 
-    data class Loaded(val charactersResult: CharactersResult, val favoriteCharacters: Flow<List<DbCharacter>>) : ListScreenState
+    data class Loaded(
+        val charactersResult: CharactersResult,
+        val favoriteCharacters: Flow<List<DbCharacter>>
+    ) : ListScreenState
 
 }

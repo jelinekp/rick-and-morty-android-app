@@ -1,7 +1,6 @@
 package cz.cvut.fit.biand.homework2.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -16,36 +15,14 @@ fun Navigation() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = BottomBarScreen.Characters.route,
+        startDestination = Screens.ListScreen.route,
     ) {
-        composable(route = BottomBarScreen.Characters.route) {
-            ListScreen(
-                navigateToSearch = { navController.navigate(Screens.SearchScreen.route) },
-                navigateToCharacterDetail = {
-                    navController.navigate(Screens.DetailScreen(it).route)
-                },
-                onBottomNavItemClick = { bottomBarScreenRoute ->
-                    navController.navigate(bottomBarScreenRoute) {
-                    popUpTo(navController.graph.findStartDestination().id)
-                    launchSingleTop = true
-                } },
-                currentScreen = BottomBarScreen.Characters
-            )
-        }
-        // TODO: remove duplicate and inject the same instance of viewModel:
-        composable(route = BottomBarScreen.Favorites.route) {
-            ListScreen(
-                navigateToSearch = { navController.navigate(Screens.SearchScreen.route) },
-                navigateToCharacterDetail = {
-                    navController.navigate(Screens.DetailScreen(it).route)
-                },
-                onBottomNavItemClick = { bottomBarScreenRoute ->
-                    navController.navigate(bottomBarScreenRoute) {
-                        popUpTo(navController.graph.findStartDestination().id)
-                        launchSingleTop = true
-                    } },
-                currentScreen = BottomBarScreen.Favorites
-            )
+        composable(route = Screens.ListScreen.route) {
+            ListScreen(navigateToSearch = {
+                navController.navigate(Screens.SearchScreen.route)
+            }, navigateToCharacterDetail = {
+                navController.navigate(Screens.DetailScreen(it).route)
+            })
         }
 
         composable(

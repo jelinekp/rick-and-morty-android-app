@@ -17,7 +17,7 @@ class CharacterRoomDataSource(private val characterDao: CharacterDao) : Characte
         return characterDao.getCharacter(id)
     }
 
-    override suspend fun isCharacterFavorite(id: String): Boolean {
+    override suspend fun isCharacterFavorite(id: String): Boolean? {
         return characterDao.isCharacterFavorite(id)
     }
 

@@ -22,10 +22,11 @@ class CharacterDetailViewModel(
 
     init {
         viewModelScope.launch {
-            val characterId: String = savedStateHandle[Screens.DetailScreen.ID] ?: throw NullPointerException("Character is missing")
+            val characterId: String = savedStateHandle[Screens.DetailScreen.ID]
+                ?: throw NullPointerException("Character is missing")
             val character = characterRepository.getCharacter(characterId)
-            character.collect {dbCharacter ->
-                _screenStateStream.update {screenStateStream ->
+            character.collect { dbCharacter ->
+                _screenStateStream.update { screenStateStream ->
                     // Log.d("Updated Character", dbCharacter.toString())
                     screenStateStream.copy(character = dbCharacter)
                 }

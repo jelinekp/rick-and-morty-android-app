@@ -30,4 +30,15 @@ data class DbCharacter(
     val isFavorite: Boolean,
 )
 
-val emptyCharacter = DbCharacter("666", "Empty Character", "Not saved in local database", "", "", "", "", "", "", false)
+val emptyCharacter = DbCharacter(
+    "666",
+    "Empty Character",
+    "Not saved in local database",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    false
+)

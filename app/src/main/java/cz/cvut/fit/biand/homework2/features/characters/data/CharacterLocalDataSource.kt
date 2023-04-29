@@ -11,7 +11,7 @@ interface CharacterLocalDataSource {
 
     suspend fun getCharacter(id: String): Flow<DbCharacter?>
 
-    suspend fun isCharacterFavorite(id: String): Boolean
+    suspend fun isCharacterFavorite(id: String): Boolean?
 
     suspend fun updateFavorite(id: String, isFavorite: Boolean)
 

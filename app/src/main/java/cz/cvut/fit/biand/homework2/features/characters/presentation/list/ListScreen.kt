@@ -1,6 +1,6 @@
 package cz.cvut.fit.biand.homework2.features.characters.presentation.list
 
-import androidx.compose.foundation.layout.Box
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -20,7 +20,6 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
@@ -29,33 +28,37 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import cz.cvut.fit.biand.homework2.R
-import cz.cvut.fit.biand.homework2.features.characters.data.db.DbCharacter
-import cz.cvut.fit.biand.homework2.features.characters.presentation.common.Characters
-import cz.cvut.fit.biand.homework2.features.characters.presentation.common.LoadedState
 import cz.cvut.fit.biand.homework2.features.characters.presentation.common.LoadingState
+import cz.cvut.fit.biand.homework2.features.characters.presentation.list.characters.LoadedState
+import cz.cvut.fit.biand.homework2.features.characters.presentation.list.favorites.FavoriteCharactersList
 import cz.cvut.fit.biand.homework2.navigation.BottomBarScreen
 import org.koin.androidx.compose.koinViewModel
 
 /**
- * Screen representing a list of characters
+ * Screen representing a list of characters for "Characters" and "Favorites"
  */
 @Composable
 fun ListScreen(
     viewModel: ListViewModel = koinViewModel(),
     navigateToCharacterDetail: (id: String) -> Unit,
-    navigateToSearch: () -> Unit,
-    onBottomNavItemClick: (String) -> Unit,
-    currentScreen: BottomBarScreen,
+    navigateToSearch: () -> Unit
 ) {
     val screenState by viewModel.screenStateStream.collectAsStateWithLifecycle()
 
     ListScreen(
         screenState = screenState,
         navigateToCharacterDetail = navigateToCharacterDetail,
-        navigateToSearch = navigateToSearch,
-        onBottomNavItemClick = onBottomNavItemClick,
-        currentScreen = currentScreen
+        navigateToSearch = navigateToSearch
     )
 }
 
@@ -63,24 +66,27 @@ fun ListScreen(
 private fun ListScreen(
     screenState: ListScreenState,
     navigateToCharacterDetail: (id: String) -> Unit,
-    navigateToSearch: () -> Unit,
-    onBottomNavItemClick: (String) -> Unit,
-    currentScreen: BottomBarScreen,
+    navigateToSearch: () -> Unit
 ) {
     val focusRequester = remember { FocusRequester() }
+    val bottomNavController = rememberNavController()
+
+    @StringRes val screenTitle = when (currentRoute(navController = bottomNavController)?.route) {
+        BottomBarScreen.Favorites.route -> BottomBarScreen.Favorites.title
+        else -> BottomBarScreen.Characters.title
+    }
 
     Scaffold(
         topBar = {
             ListTopBar(
-                title = stringResource(id = currentScreen.title),
+                title = stringResource(id = screenTitle),
                 searchIconAction = navigateToSearch,
                 modifier = Modifier.focusRequester(focusRequester)
             )
         },
         bottomBar = {
             BottomBar(
-                currentScreen = currentScreen,
-                onItemClick = onBottomNavItemClick
+                bottomNavController = bottomNavController
             )
         },
         backgroundColor = MaterialTheme.colorScheme.background
@@ -92,47 +98,46 @@ private fun ListScreen(
         ) {
             when (screenState) {
                 is ListScreenState.Loading -> LoadingState()
-                is ListScreenState.Loaded ->
-                    if (currentScreen == BottomBarScreen.Characters) {
-                        LoadedState(
-                            charactersResult = screenState.charactersResult,
-                            errorText = stringResource(R.string.outdated_data_message),
-                            onCharacterClick = { navigateToCharacterDetail(it.id) }
-                        )
-                    } else {
-                        FavoriteCharactersList(
-                            favoriteCharacters = screenState.favoriteCharacters.collectAsStateWithLifecycle(initialValue = emptyList()).value,
-                            onCharacterClicked = { navigateToCharacterDetail(it.id) },
-                        )
-                    }
+                is ListScreenState.Loaded -> ListScreenNavHost(
+                    bottomNavController = bottomNavController,
+                    screenState = screenState,
+                    navigateToCharacterDetail = navigateToCharacterDetail
+                )
             }
         }
     }
 }
 
-@Composable fun FavoriteCharactersList(
-    favoriteCharacters: List<DbCharacter>,
-    onCharacterClicked: (DbCharacter) -> Unit
+@Composable
+private fun ListScreenNavHost(
+    bottomNavController: NavHostController,
+    screenState: ListScreenState.Loaded,
+    navigateToCharacterDetail: (id: String) -> Unit,
 ) {
-    if (favoriteCharacters.isEmpty()) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Text(
-                text = stringResource(R.string.no_favorite_characters_yet),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.outline,
-                modifier = Modifier.align(Alignment.Center),
+    NavHost(
+        navController = bottomNavController,
+        startDestination = BottomBarScreen.Characters.route
+    ) {
+        composable(BottomBarScreen.Characters.route) {
+            LoadedState(
+                charactersResult = screenState.charactersResult,
+                errorText = stringResource(R.string.outdated_data_message),
+                onCharacterClick = { navigateToCharacterDetail(it.id) }
             )
         }
-    } else {
-        Characters(
-            characters = favoriteCharacters,
-            onCharacterClicked = onCharacterClicked,
-        )
+        composable(BottomBarScreen.Favorites.route) {
+            FavoriteCharactersList(
+                favoriteCharacters = screenState.favoriteCharacters.collectAsStateWithLifecycle(
+                    initialValue = emptyList()
+                ).value,
+                onCharacterClicked = { navigateToCharacterDetail(it.id) },
+            )
+        }
     }
 }
 
 @Composable
-fun ListTopBar(
+private fun ListTopBar(
     title: String?,
     searchIconAction: () -> Unit,
     modifier: Modifier = Modifier
@@ -140,20 +145,23 @@ fun ListTopBar(
     TopAppBar(
         elevation = 10.dp,
         backgroundColor = MaterialTheme.colorScheme.background,
-        title = { Text(
-            text = title ?: "",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        ) },
-        navigationIcon = null,
-        actions = { IconButton(onClick = searchIconAction) {
-            Icon(
-                painter =  painterResource(id = R.drawable.ic_search),
-                contentDescription = stringResource(R.string.searchIcon),
-                modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.onBackground
+        title = {
+            Text(
+                text = title ?: "",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground
             )
-        }
+        },
+        navigationIcon = null,
+        actions = {
+            IconButton(onClick = searchIconAction) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_search),
+                    contentDescription = stringResource(R.string.searchIcon),
+                    modifier = Modifier.size(24.dp),
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
         },
         modifier = modifier//.height(48.dp)
     )
@@ -161,8 +169,7 @@ fun ListTopBar(
 
 @Composable
 private fun BottomBar(
-    currentScreen: BottomBarScreen,
-    onItemClick: (String) -> Unit
+    bottomNavController: NavController
 ) {
     val screens = listOf(
         BottomBarScreen.Characters,
@@ -180,9 +187,14 @@ private fun BottomBar(
         screens.forEach { screen ->
             BottomBarItem(
                 screen = screen,
-                currentScreen = currentScreen,
+                currentScreen = currentRoute(navController = bottomNavController),
                 modifier = Modifier.weight(4f),
-                onItemClick = onItemClick
+                onItemClick = {
+                    bottomNavController.navigate(screen.route) {
+                        popUpTo(bottomNavController.graph.findStartDestination().id)
+                        launchSingleTop = true
+                    }
+                }
             )
         }
         Spacer(modifier = Modifier.weight(1f))
@@ -190,23 +202,37 @@ private fun BottomBar(
 }
 
 @Composable
-fun RowScope.BottomBarItem(
+private fun RowScope.BottomBarItem(
     screen: BottomBarScreen,
-    currentScreen: BottomBarScreen,
+    currentScreen: NavDestination?,
     modifier: Modifier = Modifier,
-    onItemClick: (String) -> Unit
+    onItemClick: () -> Unit
 ) {
     BottomNavigationItem(
         modifier = modifier,
-        icon = { Icon(
-            painter = painterResource(id = screen.icon),
-            contentDescription = stringResource(R.string.navigation_icon)
-        ) },
-        selected = currentScreen == screen,
+        label = {
+            androidx.compose.material.Text(
+                text = stringResource(id = screen.title),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        },
+        icon = {
+            Icon(
+                painter = painterResource(id = screen.icon),
+                contentDescription = stringResource(R.string.navigation_icon)
+            )
+        },
+        selected = currentScreen?.hierarchy?.any {
+            it.route == screen.route
+        } == true,
         unselectedContentColor = MaterialTheme.colorScheme.outline,
         selectedContentColor = MaterialTheme.colorScheme.primary,
-        label = { Text(text = stringResource(id = screen.title), style = MaterialTheme.typography.bodyMedium) },
-        alwaysShowLabel = true,
-        onClick = { onItemClick(screen.route) }
+        onClick = onItemClick
     )
+}
+
+@Composable
+private fun currentRoute(navController: NavController): NavDestination? {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    return navBackStackEntry?.destination
 }

@@ -35,7 +35,8 @@ class SearchViewModel(
             if (name.isBlank()) {
                 _screenStateStream.value = _screenStateStream.value
             } else {
-                _screenStateStream.value = SearchScreenState.Loaded(characterRepository.getApiCharactersByName(name))
+                _screenStateStream.value =
+                    SearchScreenState.Loaded(characterRepository.getApiCharactersByName(name))
             }
         }
     }
@@ -52,6 +53,6 @@ sealed interface SearchScreenState {
 
     data class Loaded(
         val charactersResult: CharactersResult,
-        ) : SearchScreenState
+    ) : SearchScreenState
 }
 

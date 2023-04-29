@@ -31,5 +31,5 @@ interface CharacterDao {
     suspend fun deleteAll()
 
     @Query("SELECT is_favorite FROM characters WHERE id = :id")
-    suspend fun isCharacterFavorite(id: String): Boolean
+    suspend fun isCharacterFavorite(id: String): Boolean? // nullable Boolean not necessary - Room returns false when id not found
 }

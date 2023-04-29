@@ -2,7 +2,10 @@ package cz.cvut.fit.biand.homework2.features.characters.domain
 
 import androidx.annotation.DrawableRes
 
-data class Character (
+/**
+ * Not needed at this time, the DbCharacter is just fine
+ */
+data class Character(
 
     val id: Int,
 
@@ -21,6 +24,8 @@ data class Character (
     val location: String,
 
     @DrawableRes
-    val imageRes: Int
+    val imageRes: Int,
+
+    val isFavorite: Boolean
 
 )

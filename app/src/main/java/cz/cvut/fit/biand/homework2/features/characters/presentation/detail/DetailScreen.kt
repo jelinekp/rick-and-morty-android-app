@@ -32,8 +32,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import cz.cvut.fit.biand.homework2.R
 import cz.cvut.fit.biand.homework2.features.characters.data.db.DbCharacter
-import cz.cvut.fit.biand.homework2.features.characters.data.db.emptyCharacter
 import cz.cvut.fit.biand.homework2.features.characters.presentation.common.BackIcon
+import cz.cvut.fit.biand.homework2.features.characters.presentation.common.LoadingState
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -44,7 +44,7 @@ fun DetailScreen(
     val screenState by viewModel.screenStateStream.collectAsStateWithLifecycle()
 
     DetailScreen(
-        dbCharacter = screenState.character,
+        character = screenState.character,
         onNavigateBack = navigateUp,
         onFavorite = viewModel::onFavoriteClick
     )
@@ -52,24 +52,34 @@ fun DetailScreen(
 
 @Composable
 private fun DetailScreen(
-    dbCharacter: DbCharacter?,
+    character: DbCharacter?,
     onNavigateBack: () -> Unit,
     onFavorite: () -> Unit = {},
 ) {
-    val character = dbCharacter ?: emptyCharacter
+    //val character = dbCharacter ?: emptyCharacter
 
     Scaffold(
         topBar = {
-            DetailTopBar(title = character.name, favorite = character.isFavorite, onNavigateBack = onNavigateBack, onFavorite = onFavorite)
+            DetailTopBar(
+                title = character?.name ?: "",
+                favorite = character?.isFavorite ?: false,
+                onNavigateBack = onNavigateBack,
+                onFavorite = onFavorite
+            )
         },
         backgroundColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
-        CharacterDetailCard(character, paddingValues)
+        if (character != null)
+            CharacterDetailCard(character, paddingValues)
+        else {
+            LoadingState()
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable fun DetailTopBar(
+@Composable
+private fun DetailTopBar(
     title: String?,
     favorite: Boolean,
     onFavorite: () -> Unit,
@@ -79,20 +89,23 @@ private fun DetailScreen(
     TopAppBar(
         elevation = 10.dp,
         backgroundColor = MaterialTheme.colorScheme.background,
-        title = { Text(
-            text = title ?: "",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        ) },
+        title = {
+            Text(
+                text = title ?: "",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        },
         navigationIcon = { BackIcon(onNavigateBack) },
         actions = {
-            FavoriteIcon(favoriteIconAction = onFavorite, isFavorite = favorite)
+            FavoriteIconButton(favoriteIconAction = onFavorite, isFavorite = favorite)
         },
         modifier = modifier
     )
 }
 
-@Composable private fun FavoriteIcon(
+@Composable
+private fun FavoriteIconButton(
     favoriteIconAction: () -> Unit,
     isFavorite: Boolean
 ) {
@@ -125,9 +138,11 @@ private fun CharacterDetailCard(dbCharacter: DbCharacter, paddingValues: Padding
             .padding(paddingValues)
             .padding(all = 8.dp)
     ) {
-        Column(modifier = Modifier
-            .background(MaterialTheme.colorScheme.primaryContainer)
-            .fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.primaryContainer)
+                .fillMaxSize()
+        ) {
             Row {
                 AsyncImage(
                     model = dbCharacter.imageUrl,
@@ -140,9 +155,11 @@ private fun CharacterDetailCard(dbCharacter: DbCharacter, paddingValues: Padding
                 CharacterTitle(title = dbCharacter.name)
             }
             Divider()
-            Column(modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 24.dp)) {
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 24.dp)
+            ) {
                 Information(title = stringResource(R.string.status), value = dbCharacter.status)
                 Information(title = stringResource(R.string.species), value = dbCharacter.species)
                 Information(title = stringResource(R.string.type), value = dbCharacter.type)
@@ -155,7 +172,7 @@ private fun CharacterDetailCard(dbCharacter: DbCharacter, paddingValues: Padding
 }
 
 @Composable
-fun CharacterTitle(
+private fun CharacterTitle(
     title: String
 ) {
     Column {

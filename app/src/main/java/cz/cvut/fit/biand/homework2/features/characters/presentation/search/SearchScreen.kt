@@ -38,8 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.cvut.fit.biand.homework2.R
 import cz.cvut.fit.biand.homework2.features.characters.presentation.common.BackIcon
-import cz.cvut.fit.biand.homework2.features.characters.presentation.common.LoadedState
 import cz.cvut.fit.biand.homework2.features.characters.presentation.common.LoadingState
+import cz.cvut.fit.biand.homework2.features.characters.presentation.list.characters.LoadedState
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -146,7 +146,7 @@ private fun SearchTopBarTitle(
             autoCorrect = false,
             imeAction = ImeAction.Search
         ),
-        keyboardActions = KeyboardActions(onSearch = {focusRequester.freeFocus()}),
+        keyboardActions = KeyboardActions(onSearch = { focusRequester.freeFocus() }),
         singleLine = true,
         colors = TextFieldDefaults.textFieldColors(
             focusedIndicatorColor = Color.Transparent,
