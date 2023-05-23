@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Homework 2</string>
+    <string name="app_name">Rick And Morty 2</string>
 
     <string name="characters">Characters</string>
     <string name="favorites">Favorites</string>
@@ -14,4 +14,18 @@
     <string name="location">Location</string>
     <string name="favorite">Favorite</string>
     <string name="search">Search</string>
+    <string name="outdated_data_message">Please go online to load fresh data.</string>
+    <string name="please_connect_your_device_to_internet_to_perform_search">Please go online to perform search.</string>
+    <string name="backIcon">Back icon</string>
+    <string name="character_avatar">Character avatar</string>
+    <string name="favourite_navigation_icon">Favourite navigation icon</string>
+    <string name="image">Image</string>
+    <string name="avatarWithName">%1$s avatar</string>
+    <string name="characterIsInFavorites">Character is in favorites.</string>
+    <string name="characters_navigation_icon">Characters navigation icon</string>
+    <string name="searchIcon">search icon\n</string>
+    <string name="noCharactersFoundForQuery">No characters found for "%1$s"</string>
+    <string name="characterIsNotInFavorites">Character is not in favorites</string>
+    <string name="navigation_icon">Navigation icon\n</string>
+    <string name="no_favorite_characters_yet">No favorite characters yet.</string>
 </resources>

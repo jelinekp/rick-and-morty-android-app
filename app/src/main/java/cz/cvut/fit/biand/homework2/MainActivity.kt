@@ -3,25 +3,44 @@ package cz.cvut.fit.biand.homework2
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.Surface
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.Modifier
+import cz.cvut.fit.biand.homework2.core.presentation.theme.AppTheme
 import cz.cvut.fit.biand.homework2.navigation.Navigation
-import cz.cvut.fit.biand.homework2.presentation.DetailViewModel
-import cz.cvut.fit.biand.homework2.presentation.ListViewModel
-import cz.cvut.fit.biand.homework2.presentation.SearchViewModel
-import cz.cvut.fit.biand.homework2.ui.theme.Homework2Theme
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 class MainActivity : ComponentActivity() {
-    // Tahle část asi bude chtít předělat
-    private val listViewModel: ListViewModel by viewModels()
-    private val detailViewModel: DetailViewModel by viewModels()
-    private val searchViewModel: SearchViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Homework2Theme {
-                // Tahle část asi bude chtít předělat
-                Navigation(listViewModel, detailViewModel, searchViewModel)
+            AppTheme {
+                val systemUiController = rememberSystemUiController()
+                val appBackgroundColor = MaterialTheme.colorScheme.background
+                val appNavBarColor = MaterialTheme.colorScheme.primaryContainer
+                val useDarkIcons = !isSystemInDarkTheme()
+
+                SideEffect {
+                    systemUiController.setStatusBarColor(
+                        color = appBackgroundColor,
+                        darkIcons = useDarkIcons
+                    )
+                    systemUiController.setNavigationBarColor(
+                        color = appNavBarColor,
+                        darkIcons = useDarkIcons
+                    )
+                }
+
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = appBackgroundColor
+                ) {
+                    Navigation()
+                }
             }
         }
     }
