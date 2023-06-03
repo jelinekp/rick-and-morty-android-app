@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cz.cvut.fit.biand.homework2.features.characters.data.CharacterRepository
-import cz.cvut.fit.biand.homework2.features.characters.data.db.DbCharacter
+import cz.cvut.fit.biand.homework2.features.characters.model.Character
 import cz.cvut.fit.biand.homework2.navigation.Screens
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,10 +25,10 @@ class CharacterDetailViewModel(
             val characterId: String = savedStateHandle[Screens.DetailScreen.ID]
                 ?: throw NullPointerException("Character is missing")
             val character = characterRepository.getCharacter(characterId)
-            character.collect { dbCharacter ->
+            character.collect { ramCharacter ->
                 _screenStateStream.update { screenStateStream ->
                     // Log.d("Updated Character", dbCharacter.toString())
-                    screenStateStream.copy(character = dbCharacter)
+                    screenStateStream.copy(character = ramCharacter)
                 }
             }
         }
@@ -37,10 +37,10 @@ class CharacterDetailViewModel(
     fun onFavoriteClick() {
         viewModelScope.launch(Dispatchers.IO) {
             _screenStateStream.value.character?.let {
-                characterRepository.updateFavorite(it.id, !it.isFavorite)
+                characterRepository.updateFavorite(it, !it.isFavorite)
             }
         }
     }
 }
 
-data class CharacterDetailScreenState(val character: DbCharacter? = null)
+data class CharacterDetailScreenState(val character: Character? = null)

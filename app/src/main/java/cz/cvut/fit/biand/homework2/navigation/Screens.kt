@@ -22,13 +22,13 @@ sealed class BottomBarScreen(
     @StringRes val title: Int,
     @DrawableRes val icon: Int
 ) {
-    object Characters : BottomBarScreen(
+    object ListScreen : BottomBarScreen(
         route = "characters",
         title = R.string.characters,
         icon = R.drawable.ic_characters
     )
 
-    object Favorites : BottomBarScreen(
+    object FavoritesScreen : BottomBarScreen(
         route = "favorites",
         title = R.string.favorites,
         icon = R.drawable.ic_favorites_filled

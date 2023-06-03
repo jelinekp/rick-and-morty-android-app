@@ -1,25 +1,36 @@
 package cz.cvut.fit.biand.homework2.features.characters.presentation.list
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
@@ -37,10 +48,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import cz.cvut.fit.biand.homework2.R
+import cz.cvut.fit.biand.homework2.features.characters.model.Character
+import cz.cvut.fit.biand.homework2.features.characters.presentation.common.FavoriteIconIndicator
 import cz.cvut.fit.biand.homework2.features.characters.presentation.common.LoadingState
-import cz.cvut.fit.biand.homework2.features.characters.presentation.list.characters.LoadedState
-import cz.cvut.fit.biand.homework2.features.characters.presentation.list.favorites.FavoriteCharactersList
 import cz.cvut.fit.biand.homework2.navigation.BottomBarScreen
 import org.koin.androidx.compose.koinViewModel
 
@@ -71,15 +83,15 @@ private fun ListScreen(
     val focusRequester = remember { FocusRequester() }
     val bottomNavController = rememberNavController()
 
-    @StringRes val screenTitle = when (currentRoute(navController = bottomNavController)?.route) {
-        BottomBarScreen.Favorites.route -> BottomBarScreen.Favorites.title
-        else -> BottomBarScreen.Characters.title
-    }
+    /*@StringRes val screenTitle = when (currentRoute(navController = bottomNavController)?.route) {
+        BottomBarScreen.Favorites.route -> BottomBarScreen.FavoritesScreen.title
+        else -> BottomBarScreen.ListScreen.title
+    }*/
 
     Scaffold(
         topBar = {
             ListTopBar(
-                title = stringResource(id = screenTitle),
+                title = stringResource(id = BottomBarScreen.ListScreen.title),
                 searchIconAction = navigateToSearch,
                 modifier = Modifier.focusRequester(focusRequester)
             )
@@ -98,40 +110,14 @@ private fun ListScreen(
         ) {
             when (screenState) {
                 is ListScreenState.Loading -> LoadingState()
-                is ListScreenState.Loaded -> ListScreenNavHost(
-                    bottomNavController = bottomNavController,
-                    screenState = screenState,
-                    navigateToCharacterDetail = navigateToCharacterDetail
-                )
-            }
-        }
-    }
-}
+                is ListScreenState.Loaded -> LoadedState(
+                    charactersResult = screenState.charactersResult,
+                    isSuccess = screenState.isSuccess,
+                    errorText = stringResource(R.string.outdated_data_message)
+                ) { navigateToCharacterDetail(it) }
 
-@Composable
-private fun ListScreenNavHost(
-    bottomNavController: NavHostController,
-    screenState: ListScreenState.Loaded,
-    navigateToCharacterDetail: (id: String) -> Unit,
-) {
-    NavHost(
-        navController = bottomNavController,
-        startDestination = BottomBarScreen.Characters.route
-    ) {
-        composable(BottomBarScreen.Characters.route) {
-            LoadedState(
-                charactersResult = screenState.charactersResult,
-                errorText = stringResource(R.string.outdated_data_message),
-                onCharacterClick = { navigateToCharacterDetail(it.id) }
-            )
-        }
-        composable(BottomBarScreen.Favorites.route) {
-            FavoriteCharactersList(
-                favoriteCharacters = screenState.favoriteCharacters.collectAsStateWithLifecycle(
-                    initialValue = emptyList()
-                ).value,
-                onCharacterClicked = { navigateToCharacterDetail(it.id) },
-            )
+                else -> {}
+            }
         }
     }
 }
@@ -163,7 +149,7 @@ private fun ListTopBar(
                 )
             }
         },
-        modifier = modifier//.height(48.dp)
+        modifier = modifier
     )
 }
 
@@ -172,8 +158,8 @@ private fun BottomBar(
     bottomNavController: NavController
 ) {
     val screens = listOf(
-        BottomBarScreen.Characters,
-        BottomBarScreen.Favorites
+        BottomBarScreen.ListScreen,
+        BottomBarScreen.FavoritesScreen,
     )
 
     BottomAppBar(
@@ -235,4 +221,113 @@ private fun RowScope.BottomBarItem(
 private fun currentRoute(navController: NavController): NavDestination? {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     return navBackStackEntry?.destination
+}
+
+/**
+ * Common for Characters and SearchScreen
+ */
+@Composable
+fun LoadedState(
+    charactersResult: List<Character>,
+    isSuccess: Boolean,
+    errorText: String,
+    onCharacterClick: (String) -> Unit
+) {
+    Column(Modifier.fillMaxSize()) {
+        OutdatedDataBanner(show = !isSuccess, errorText = errorText)
+        Characters(
+            characters = charactersResult,
+            onCharacterClicked = onCharacterClick
+        )
+    }
+}
+
+/**
+ * Common for Characters and SearchScreen
+ */
+@Composable
+private fun OutdatedDataBanner(show: Boolean, errorText: String) {
+    if (show) {
+        Text(
+            text = errorText,
+            modifier = Modifier
+                .background(color = MaterialTheme.colorScheme.errorContainer)
+                .fillMaxWidth()
+                .padding(16.dp),
+        )
+    }
+}
+
+/**
+ * Common for Characters, Favorites and SearchScreen
+ */
+@Composable
+fun Characters(
+    characters: List<Character>,
+    onCharacterClicked: (String) -> Unit,
+) {
+    LazyColumn(
+        contentPadding = PaddingValues(vertical = 12.dp, horizontal = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(characters, key = { it.id }) { character ->
+            CharacterListItem(
+                character = character,
+                onCharacterClicked = onCharacterClicked,
+            )
+        }
+    }
+}
+
+/**
+ * Common for Characters, Favorites and SearchScreen
+ */
+@Composable
+fun CharacterListItem(
+    character: Character,
+    onCharacterClicked: (String) -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .clickable {
+                onCharacterClicked(character.id)
+            },
+        elevation = CardDefaults.cardElevation(2.dp),
+        shape = RoundedCornerShape(16.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            CharacterCardContent(character = character)
+        }
+    }
+}
+
+/**
+ * Common for Characters, Favorites and SearchScreen
+ */
+@Composable
+fun CharacterCardContent(character: Character) {
+    AsyncImage(
+        model = character.imageUrl,
+        modifier = Modifier
+            .padding(8.dp)
+            .size(48.dp)
+            .clip(RoundedCornerShape(8.dp)),
+        contentDescription = stringResource(id = R.string.avatarWithName, character.name)
+    )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(all = 10.dp),
+    ) {
+        Row {
+            Text(text = character.name, style = MaterialTheme.typography.titleSmall)
+            FavoriteIconIndicator(character.isFavorite)
+        }
+        Text(text = character.status, style = MaterialTheme.typography.displayMedium)
+    }
 }

@@ -3,17 +3,21 @@ package cz.cvut.fit.biand.homework2.features.characters.presentation.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cz.cvut.fit.biand.homework2.features.characters.data.CharacterRepository
-import cz.cvut.fit.biand.homework2.features.characters.data.CharactersResult
+import cz.cvut.fit.biand.homework2.features.characters.model.Character
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class SearchViewModel(
-    private val characterRepository: CharacterRepository
+    private val characterRepository: CharacterRepository,
 ) : ViewModel() {
 
     private val _screenStateStream = MutableStateFlow<SearchScreenState>(SearchScreenState.Loading)
     val screenStateStream get() = _screenStateStream.asStateFlow()
+
+    private val _searchText: MutableStateFlow<String> = MutableStateFlow("")
+    val searchText get() = _searchText.asStateFlow()
 
     init {
         getAllCharacters()
@@ -21,29 +25,30 @@ class SearchViewModel(
 
     private fun getAllCharacters() {
         viewModelScope.launch {
-            val result = characterRepository.getCharacters()
-            _screenStateStream.value = SearchScreenState.Loaded(result)
+            // TODO stop collecting after name is not blank!
+            characterRepository.getCharacters().characters.collect {
+                _screenStateStream.value = SearchScreenState.Loaded(charactersResult = it, isSuccess = true)
+            }
         }
     }
 
-    val searchText: MutableStateFlow<String> = MutableStateFlow("")
-
     fun searchCharacters(name: String) {
-        searchText.value = name
+        _searchText.value = name
         viewModelScope.launch {
-            characterRepository.getApiCharactersByName(name.lowercase())
             if (name.isBlank()) {
-                _screenStateStream.value = _screenStateStream.value
+                getAllCharacters()
             } else {
-                _screenStateStream.value =
-                    SearchScreenState.Loaded(characterRepository.getApiCharactersByName(name))
+                val isSuccessfullyLoaded = characterRepository.getCharacters().isSuccess
+                characterRepository.getApiCharactersByName(name).characters.collectLatest {
+                    _screenStateStream.value = SearchScreenState.Loaded(charactersResult = it, isSuccess = isSuccessfullyLoaded)
+                }
             }
         }
     }
 
     fun clearText() {
         getAllCharacters()
-        searchText.value = ""
+        _searchText.value = ""
     }
 }
 
@@ -52,7 +57,8 @@ sealed interface SearchScreenState {
     object Loading : SearchScreenState
 
     data class Loaded(
-        val charactersResult: CharactersResult,
+        val charactersResult: List<Character>,
+        val isSuccess: Boolean,
     ) : SearchScreenState
 }
 

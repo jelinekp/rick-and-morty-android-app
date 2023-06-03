@@ -3,6 +3,7 @@ package cz.cvut.fit.biand.homework2.features.characters.data.db
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import cz.cvut.fit.biand.homework2.features.characters.model.Character
 
 @Entity(tableName = "characters")
 data class DbCharacter(
@@ -28,17 +29,20 @@ data class DbCharacter(
 
     @ColumnInfo(name = "is_favorite")
     val isFavorite: Boolean,
-)
+) {
+    fun toCharacter() : Character {
+        return Character(
+            id = id,
+            name = name,
+            status = status,
+            species = species,
+            type = type,
+            gender = gender,
+            origin = origin,
+            location = location,
+            imageUrl = imageUrl,
+            isFavorite = isFavorite
+        )
+    }
+}
 
-val emptyCharacter = DbCharacter(
-    "666",
-    "Empty Character",
-    "Not saved in local database",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    false
-)

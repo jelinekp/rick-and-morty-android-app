@@ -9,19 +9,16 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.LocalContentAlpha
-import androidx.compose.material.LocalContentColor
 import androidx.compose.material.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,7 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.cvut.fit.biand.homework2.R
 import cz.cvut.fit.biand.homework2.features.characters.presentation.common.BackIcon
 import cz.cvut.fit.biand.homework2.features.characters.presentation.common.LoadingState
-import cz.cvut.fit.biand.homework2.features.characters.presentation.list.characters.LoadedState
+import cz.cvut.fit.biand.homework2.features.characters.presentation.list.LoadedState
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -48,7 +45,7 @@ fun SearchScreen(
     navigateUp: () -> Unit,
     viewModel: SearchViewModel = koinViewModel(),
 ) {
-    val searchedText by viewModel.searchText.collectAsState()
+    val searchedText by viewModel.searchText.collectAsStateWithLifecycle()
     val screenState by viewModel.screenStateStream.collectAsStateWithLifecycle()
 
     SearchScreenContent(
@@ -90,7 +87,6 @@ private fun SearchScreenContent(
                         focusRequester
                     )
                 },
-                //modifier = Modifier.height(48.dp)
             )
         },
         backgroundColor = MaterialTheme.colorScheme.background
@@ -104,10 +100,11 @@ private fun SearchScreenContent(
                 is SearchScreenState.Loading -> LoadingState()
                 is SearchScreenState.Loaded -> LoadedState(
                     charactersResult = screenState.charactersResult,
+                    isSuccess = screenState.isSuccess,
                     errorText = if (searchedText.isEmpty())
                         stringResource(R.string.please_connect_your_device_to_internet_to_perform_search)
                     else stringResource(id = R.string.noCharactersFoundForQuery, searchedText),
-                    onCharacterClick = { onCharacterClicked(it.id) }
+                    onCharacterClick = { onCharacterClicked(it) }
                 )
             }
         }
@@ -152,7 +149,7 @@ private fun SearchTopBarTitle(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             backgroundColor = Color.Transparent,
-            cursorColor = LocalContentColor.current.copy(alpha = LocalContentAlpha.current),
+            cursorColor = MaterialTheme.colorScheme.onBackground,
             textColor = MaterialTheme.colorScheme.onBackground
         ),
         trailingIcon = {
@@ -162,6 +159,7 @@ private fun SearchTopBarTitle(
                 Icon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = "Clear icon",
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
         },

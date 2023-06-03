@@ -23,5 +23,5 @@ interface CharacterApiDescription {
      * [Reference](https://rickandmortyapi.com/documentation/#get-a-single-character)
      */
     @GET("character/{id}")
-    suspend fun getCharacterById(@Path("id") id: Int): ApiCharacter? // nullable? is it necessary?
+    suspend fun getCharacterById(@Path("id") id: Int): ApiCharacter?
 }

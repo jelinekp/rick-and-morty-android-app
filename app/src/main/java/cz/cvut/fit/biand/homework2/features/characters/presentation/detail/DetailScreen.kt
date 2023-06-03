@@ -31,10 +31,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import cz.cvut.fit.biand.homework2.R
-import cz.cvut.fit.biand.homework2.features.characters.data.db.DbCharacter
 import cz.cvut.fit.biand.homework2.features.characters.presentation.common.BackIcon
 import cz.cvut.fit.biand.homework2.features.characters.presentation.common.LoadingState
 import org.koin.androidx.compose.koinViewModel
+import cz.cvut.fit.biand.homework2.features.characters.model.Character
 
 @Composable
 fun DetailScreen(
@@ -52,12 +52,10 @@ fun DetailScreen(
 
 @Composable
 private fun DetailScreen(
-    character: DbCharacter?,
+    character: Character?,
     onNavigateBack: () -> Unit,
     onFavorite: () -> Unit = {},
 ) {
-    //val character = dbCharacter ?: emptyCharacter
-
     Scaffold(
         topBar = {
             DetailTopBar(
@@ -129,7 +127,7 @@ private fun FavoriteIconButton(
 }
 
 @Composable
-private fun CharacterDetailCard(dbCharacter: DbCharacter, paddingValues: PaddingValues) {
+private fun CharacterDetailCard(character: Character, paddingValues: PaddingValues) {
     Card(
         elevation = CardDefaults.cardElevation(3.dp),
         shape = RoundedCornerShape(16.dp),
@@ -145,14 +143,14 @@ private fun CharacterDetailCard(dbCharacter: DbCharacter, paddingValues: Padding
         ) {
             Row {
                 AsyncImage(
-                    model = dbCharacter.imageUrl,
+                    model = character.imageUrl,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .padding(16.dp),
                     contentDescription = stringResource(R.string.image),
                     error = painterResource(id = R.drawable.ic_launcher_foreground)
                 )
-                CharacterTitle(title = dbCharacter.name)
+                CharacterTitle(title = character.name)
             }
             Divider()
             Column(
@@ -160,12 +158,12 @@ private fun CharacterDetailCard(dbCharacter: DbCharacter, paddingValues: Padding
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 24.dp)
             ) {
-                Information(title = stringResource(R.string.status), value = dbCharacter.status)
-                Information(title = stringResource(R.string.species), value = dbCharacter.species)
-                Information(title = stringResource(R.string.type), value = dbCharacter.type)
-                Information(title = stringResource(R.string.gender), value = dbCharacter.gender)
-                Information(title = stringResource(R.string.origin), value = dbCharacter.origin)
-                Information(title = stringResource(R.string.location), value = dbCharacter.location)
+                Information(title = stringResource(R.string.status), value = character.status)
+                Information(title = stringResource(R.string.species), value = character.species)
+                Information(title = stringResource(R.string.type), value = character.type)
+                Information(title = stringResource(R.string.gender), value = character.gender)
+                Information(title = stringResource(R.string.origin), value = character.origin)
+                Information(title = stringResource(R.string.location), value = character.location)
             }
         }
     }

@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CharacterDao {
 
-    @Query("SELECT * FROM characters") //  ORDER BY name ASC
+    @Query("SELECT * FROM characters")
     fun getAllCharacters(): Flow<List<DbCharacter>>
 
     @Query("SELECT * FROM characters WHERE is_favorite = 1")
@@ -15,11 +15,14 @@ interface CharacterDao {
     @Query("SELECT * FROM characters WHERE id = :id")
     fun getCharacter(id: String): Flow<DbCharacter?>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(dbCharacters: List<DbCharacter>)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     suspend fun update(dbCharacter: DbCharacter)
+
+    @Query("SELECT EXISTS(SELECT 1 FROM characters WHERE id = :id)")
+    suspend fun isCharacterStored(id: String): Boolean
 
     @Query("UPDATE characters SET is_favorite = :isFavorite WHERE id = :id")
     suspend fun updateFavorite(id: String, isFavorite: Boolean)
@@ -31,5 +34,5 @@ interface CharacterDao {
     suspend fun deleteAll()
 
     @Query("SELECT is_favorite FROM characters WHERE id = :id")
-    suspend fun isCharacterFavorite(id: String): Boolean? // nullable Boolean not necessary - Room returns false when id not found
+    suspend fun isCharacterFavorite(id: String): Boolean
 }

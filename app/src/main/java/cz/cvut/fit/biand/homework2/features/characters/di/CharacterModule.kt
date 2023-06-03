@@ -14,6 +14,7 @@ import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.core.module.dsl.factoryOf
 import org.koin.dsl.module
 import retrofit2.Retrofit
+import cz.cvut.fit.biand.homework2.features.characters.domain.GetSearchResultsUseCase
 
 val characterModule get() = module {
     single { get<Retrofit>().create(CharacterApiDescription::class.java) }
@@ -23,6 +24,7 @@ val characterModule get() = module {
     factory<CharacterLocalDataSource> { CharacterRoomDataSource(characterDao = get()) }
 
     factoryOf(::CharacterRepository)
+    factoryOf(::GetSearchResultsUseCase)
 
     viewModelOf(::ListViewModel)
     viewModelOf(::CharacterDetailViewModel)

@@ -1,7 +1,7 @@
 package cz.cvut.fit.biand.homework2.features.characters.data.api
 
-import cz.cvut.fit.biand.homework2.features.characters.data.db.DbCharacter
 import kotlinx.serialization.Serializable
+import cz.cvut.fit.biand.homework2.features.characters.model.Character
 
 @Serializable
 data class ApiCharacter(
@@ -28,8 +28,8 @@ data class ApiCharacter(
         val url: String,
     )
 
-    fun toDbCharacter(isFavorite: Boolean = false): DbCharacter {
-        return DbCharacter(
+    fun toCharacter(isFavorite: Boolean = false): Character {
+        return Character(
             id = id.toString(),
             name = name,
             status = status,

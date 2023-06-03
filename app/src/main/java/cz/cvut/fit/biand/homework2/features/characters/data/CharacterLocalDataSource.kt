@@ -1,21 +1,21 @@
 package cz.cvut.fit.biand.homework2.features.characters.data
 
-import cz.cvut.fit.biand.homework2.features.characters.data.db.DbCharacter
+import cz.cvut.fit.biand.homework2.features.characters.model.Character
 import kotlinx.coroutines.flow.Flow
 
 interface CharacterLocalDataSource {
 
-    suspend fun getCharacters(): Flow<List<DbCharacter>>
+    fun getCharacters(): Flow<List<Character>>
 
-    suspend fun getFavoriteCharacters(): Flow<List<DbCharacter>>
+    fun getFavoriteCharacters(): Flow<List<Character>>
 
-    suspend fun getCharacter(id: String): Flow<DbCharacter?>
+    fun getCharacter(id: String): Flow<Character?>
 
-    suspend fun isCharacterFavorite(id: String): Boolean?
+    suspend fun isCharacterFavorite(id: String): Boolean
 
-    suspend fun updateFavorite(id: String, isFavorite: Boolean)
+    suspend fun updateFavorite(character: Character, isFavorite: Boolean)
 
-    suspend fun insert(characters: List<DbCharacter>)
+    suspend fun insert(characters: List<Character>)
 
     suspend fun deleteAll()
 }
