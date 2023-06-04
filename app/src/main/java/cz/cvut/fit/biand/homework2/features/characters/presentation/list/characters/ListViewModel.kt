@@ -1,4 +1,4 @@
-package cz.cvut.fit.biand.homework2.features.characters.presentation.list
+package cz.cvut.fit.biand.homework2.features.characters.presentation.list.characters
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -20,7 +20,8 @@ class ListViewModel(
         viewModelScope.launch {
             val isSuccessfullyLoaded = characterRepository.getCharacters().isSuccess
             characterRepository.getCharacters().characters.collectLatest {
-                _screenStateStream.value = ListScreenState.Loaded(charactersResult = it, isSuccess = isSuccessfullyLoaded)
+                _screenStateStream.value =
+                    ListScreenState.Loaded(charactersResult = it, isSuccess = isSuccessfullyLoaded)
             }
         }
     }

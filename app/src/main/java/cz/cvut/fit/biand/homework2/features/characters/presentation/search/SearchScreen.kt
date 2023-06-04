@@ -36,7 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.cvut.fit.biand.homework2.R
 import cz.cvut.fit.biand.homework2.features.characters.presentation.common.BackIcon
 import cz.cvut.fit.biand.homework2.features.characters.presentation.common.LoadingState
-import cz.cvut.fit.biand.homework2.features.characters.presentation.list.LoadedState
+import cz.cvut.fit.biand.homework2.features.characters.presentation.list.characters.LoadedState
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

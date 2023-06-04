@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.cvut.fit.biand.homework2.R
-import cz.cvut.fit.biand.homework2.features.characters.presentation.list.Characters
+import cz.cvut.fit.biand.homework2.features.characters.presentation.list.characters.Characters
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

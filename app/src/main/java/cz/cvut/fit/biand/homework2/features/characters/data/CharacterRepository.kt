@@ -1,11 +1,9 @@
 package cz.cvut.fit.biand.homework2.features.characters.data
 
-import android.util.Log
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import cz.cvut.fit.biand.homework2.features.characters.model.Character
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOf
-import cz.cvut.fit.biand.homework2.features.characters.model.Character
 
 class CharacterRepository(
     private val characterLocalDataSource: CharacterLocalDataSource,
@@ -29,7 +27,6 @@ class CharacterRepository(
                 isSuccess = true
             )
         } catch (t: Throwable) {
-            Log.d("ERROR", t.message.toString())
             CharactersResult(characterLocalDataSource.getCharacters(), isSuccess = false)
         }
     }

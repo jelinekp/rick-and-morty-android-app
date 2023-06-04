@@ -2,9 +2,6 @@ package cz.cvut.fit.biand.homework2.features.characters.domain
 
 import cz.cvut.fit.biand.homework2.features.characters.data.CharacterRepository
 import cz.cvut.fit.biand.homework2.features.characters.data.CharactersResult
-import cz.cvut.fit.biand.homework2.features.characters.model.Character
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 
 
