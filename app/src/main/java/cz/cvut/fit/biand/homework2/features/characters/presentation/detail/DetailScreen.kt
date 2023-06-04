@@ -11,16 +11,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -31,10 +31,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import cz.cvut.fit.biand.homework2.R
+import cz.cvut.fit.biand.homework2.features.characters.model.Character
 import cz.cvut.fit.biand.homework2.features.characters.presentation.common.BackIcon
 import cz.cvut.fit.biand.homework2.features.characters.presentation.common.LoadingState
 import org.koin.androidx.compose.koinViewModel
-import cz.cvut.fit.biand.homework2.features.characters.model.Character
 
 @Composable
 fun DetailScreen(
@@ -54,7 +54,7 @@ fun DetailScreen(
 private fun DetailScreen(
     character: Character?,
     onNavigateBack: () -> Unit,
-    onFavorite: () -> Unit = {},
+    onFavorite: () -> Unit,
 ) {
     Scaffold(
         topBar = {

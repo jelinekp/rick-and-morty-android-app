@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Icon
@@ -24,13 +25,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.cvut.fit.biand.homework2.R
@@ -45,8 +49,15 @@ fun SearchScreen(
     navigateUp: () -> Unit,
     viewModel: SearchViewModel = koinViewModel(),
 ) {
-    val searchedText by viewModel.searchText.collectAsStateWithLifecycle()
+    val searchedText by viewModel.searchTextFieldValue.collectAsStateWithLifecycle()
     val screenState by viewModel.screenStateStream.collectAsStateWithLifecycle()
+    val textFieldFocus by viewModel.textFieldFocus.collectAsStateWithLifecycle()
+    val lazyColumnScrollState by viewModel.lazyColumnScrollState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        // Important to refresh search result on each search screen entry to avoid displaying all data (Favorites Icon can change)
+        viewModel.refreshSearchResults()
+    }
 
     SearchScreenContent(
         onNavigateBack = navigateUp,
@@ -55,22 +66,25 @@ fun SearchScreen(
         onSearch = viewModel::searchCharacters,
         onClear = viewModel::clearText,
         onCharacterClicked = navigateToCharacterDetail,
+        searchFieldFocusRequester = textFieldFocus,
+        lazyColumnScrollState = lazyColumnScrollState,
     )
 }
 
 @Composable
 private fun SearchScreenContent(
-    searchedText: String,
+    searchedText: TextFieldValue,
     screenState: SearchScreenState,
     onNavigateBack: () -> Unit,
-    onSearch: (String) -> Unit,
+    onSearch: (TextFieldValue) -> Unit,
     onClear: () -> Unit,
     onCharacterClicked: (id: String) -> Unit = {},
+    searchFieldFocusRequester: FocusRequester,
+    lazyColumnScrollState: LazyListState,
 ) {
-    val focusRequester = remember { FocusRequester() }
-
     LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
+        // automatically showing up sw keyboard
+        searchFieldFocusRequester.requestFocus()
     }
 
     Scaffold(
@@ -81,10 +95,10 @@ private fun SearchScreenContent(
                 navigationIcon = { BackIcon(onNavigateBack) },
                 title = {
                     SearchTopBarTitle(
-                        searchedText,
-                        onSearch,
-                        onClear,
-                        focusRequester
+                        textFieldValue = searchedText,
+                        onSearchTextChanged = onSearch,
+                        onClear = onClear,
+                        focusRequester = searchFieldFocusRequester,
                     )
                 },
             )
@@ -101,33 +115,36 @@ private fun SearchScreenContent(
                 is SearchScreenState.Loaded -> LoadedState(
                     charactersResult = screenState.charactersResult,
                     isSuccess = screenState.isSuccess,
-                    errorText = if (searchedText.isEmpty())
+                    errorText = if (searchedText.text.isEmpty())
                         stringResource(R.string.please_connect_your_device_to_internet_to_perform_search)
-                    else stringResource(id = R.string.noCharactersFoundForQuery, searchedText),
-                    onCharacterClick = { onCharacterClicked(it) }
+                    else stringResource(id = R.string.noCharactersFoundForQuery, searchedText.text),
+                    onCharacterClick = { onCharacterClicked(it) },
+                    state = lazyColumnScrollState,
                 )
             }
         }
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun SearchTopBarTitle(
-    text: String,
-    onSearchTextChanged: (String) -> Unit,
+    textFieldValue: TextFieldValue,
+    onSearchTextChanged: (TextFieldValue) -> Unit,
     onClear: () -> Unit,
     focusRequester: FocusRequester
 ) {
     var showClearButton by remember { mutableStateOf(false) }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     TextField(
         modifier = Modifier
             .fillMaxWidth()
-            //.height(48.dp)
             .onFocusChanged { focusState ->
                 showClearButton = (focusState.isFocused)
             }
             .focusRequester(focusRequester = focusRequester),
-        value = text,
+        value = textFieldValue,
         onValueChange = onSearchTextChanged,
         placeholder = {
             Box {
@@ -143,7 +160,10 @@ private fun SearchTopBarTitle(
             autoCorrect = false,
             imeAction = ImeAction.Search
         ),
-        keyboardActions = KeyboardActions(onSearch = { focusRequester.freeFocus() }),
+        keyboardActions = KeyboardActions(onSearch = {
+            focusRequester.freeFocus()
+            keyboardController?.hide()
+        }),
         singleLine = true,
         colors = TextFieldDefaults.textFieldColors(
             focusedIndicatorColor = Color.Transparent,
@@ -154,6 +174,10 @@ private fun SearchTopBarTitle(
         ),
         trailingIcon = {
             IconButton(onClick = {
+                if (textFieldValue.text.isBlank()) {
+                    focusRequester.freeFocus()
+                    keyboardController?.hide()
+                }
                 onClear()
             }) {
                 Icon(

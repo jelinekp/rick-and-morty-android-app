@@ -1,11 +1,7 @@
 package cz.cvut.fit.biand.homework2.features.characters.domain
 
-import cz.cvut.fit.biand.homework2.features.characters.data.CharacterRepository
-import cz.cvut.fit.biand.homework2.features.characters.data.CharactersResult
-import kotlinx.coroutines.flow.map
-
-
-class GetCharacterListUseCase(
+// Not implemented yet
+/*class GetCharacterListUseCase(
     private val characterRepository: CharacterRepository
 ) {
     suspend operator fun invoke(filter: CharactersFilter = CharactersFilter.ALL) : CharactersResult {
@@ -27,4 +23,4 @@ class GetCharacterListUseCase(
 enum class CharactersFilter {
     ALL,
     FAVORITES
-}
+}*/

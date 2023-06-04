@@ -9,16 +9,19 @@ class GetSearchResultsUseCase(
     private val characterRepository: CharacterRepository
 ) {
     suspend operator fun invoke(query: String) : CharacterSearchResult {
-        val charactersByName = characterRepository.getApiCharactersByName(name = query)
-        val resultCharacters =
-        if (query.isBlank())
-            characterRepository.getCharacters().characters.first()
-        else
-            charactersByName.characters
-
-        return CharacterSearchResult(
-            characters = resultCharacters,
-            isSuccess = charactersByName.isSuccess,
-        )
+        return if (query.isBlank()) {
+            val allCharacters = characterRepository.getCharacters()
+            CharacterSearchResult(
+                allCharacters.characters.first(),
+                allCharacters.isSuccess
+            )
+        }
+        else {
+            val searchedCharacters = characterRepository.getApiCharactersByName(name = query)
+            CharacterSearchResult(
+                searchedCharacters.characters,
+                searchedCharacters.isSuccess,
+            )
+        }
     }
 }

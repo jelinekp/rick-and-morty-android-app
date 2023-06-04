@@ -27,7 +27,6 @@ class CharacterDetailViewModel(
             val character = characterRepository.getCharacter(characterId)
             character.collect { ramCharacter ->
                 _screenStateStream.update { screenStateStream ->
-                    // Log.d("Updated Character", dbCharacter.toString())
                     screenStateStream.copy(character = ramCharacter)
                 }
             }

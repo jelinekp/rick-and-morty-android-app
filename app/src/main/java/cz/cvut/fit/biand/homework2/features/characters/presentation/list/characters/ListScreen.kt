@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -116,13 +117,15 @@ fun LoadedState(
     charactersResult: List<Character>,
     isSuccess: Boolean,
     errorText: String,
-    onCharacterClick: (String) -> Unit
+    onCharacterClick: (String) -> Unit,
+    state: LazyListState = LazyListState(),
 ) {
     Column(Modifier.fillMaxSize()) {
         OutdatedDataBanner(show = !isSuccess, errorText = errorText)
         Characters(
             characters = charactersResult,
-            onCharacterClicked = onCharacterClick
+            onCharacterClicked = onCharacterClick,
+            state = state,
         )
     }
 }
@@ -150,10 +153,12 @@ private fun OutdatedDataBanner(show: Boolean, errorText: String) {
 fun Characters(
     characters: List<Character>,
     onCharacterClicked: (String) -> Unit,
+    state: LazyListState = LazyListState()
 ) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = 12.dp, horizontal = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        state = state
     ) {
         items(characters, key = { it.id }) { character ->
             CharacterListItem(
