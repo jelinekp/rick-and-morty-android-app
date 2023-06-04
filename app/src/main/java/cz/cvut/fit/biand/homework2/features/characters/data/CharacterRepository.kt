@@ -59,15 +59,15 @@ class CharacterRepository(
     /**
      * Used by search feature, using [API endpoint](https://rickandmortyapi.com/documentation/#filter-characters)
      */
-    suspend fun getApiCharactersByName(name: String): CharactersResult {
+    suspend fun getApiCharactersByName(name: String): CharacterSearchResult {
         return try {
             val characters = characterRemoteDataSource.getCharactersByName(name)
             val charactersWithFavorites = characters.map { character ->
                 character.copy(isFavorite = characterLocalDataSource.isCharacterFavorite(character.id))
             }
-            CharactersResult(flowOf(charactersWithFavorites), isSuccess = true)
+            CharacterSearchResult(charactersWithFavorites, isSuccess = true)
         } catch (t: Throwable) {
-            CharactersResult(flowOf(emptyList()), isSuccess = false)
+            CharacterSearchResult(emptyList(), isSuccess = false)
         }
     }
 

@@ -24,7 +24,7 @@
     <string name="characterIsInFavorites">Character is in favorites.</string>
     <string name="characters_navigation_icon">Characters navigation icon</string>
     <string name="searchIcon">search icon\n</string>
-    <string name="noCharactersFoundForQuery">No characters found for "%1$s"</string>
+    <string name="noCharactersFoundForQuery">No characters found for \"%1$s\"</string>
     <string name="characterIsNotInFavorites">Character is not in favorites</string>
     <string name="navigation_icon">Navigation icon\n</string>
     <string name="no_favorite_characters_yet">No favorite characters yet.</string>

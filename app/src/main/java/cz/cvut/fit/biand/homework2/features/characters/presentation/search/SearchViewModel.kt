@@ -6,7 +6,7 @@ import cz.cvut.fit.biand.homework2.features.characters.data.CharacterRepository
 import cz.cvut.fit.biand.homework2.features.characters.model.Character
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class SearchViewModel(
@@ -26,22 +26,24 @@ class SearchViewModel(
     private fun getAllCharacters() {
         viewModelScope.launch {
             // TODO stop collecting after name is not blank!
-            characterRepository.getCharacters().characters.collect {
+            characterRepository.getCharacters().characters.first {
                 _screenStateStream.value = SearchScreenState.Loaded(charactersResult = it, isSuccess = true)
+                true
             }
         }
     }
 
     fun searchCharacters(name: String) {
         _searchText.value = name
-        viewModelScope.launch {
-            if (name.isBlank()) {
-                getAllCharacters()
-            } else {
-                val isSuccessfullyLoaded = characterRepository.getCharacters().isSuccess
-                characterRepository.getApiCharactersByName(name).characters.collectLatest {
-                    _screenStateStream.value = SearchScreenState.Loaded(charactersResult = it, isSuccess = isSuccessfullyLoaded)
-                }
+        if (name.isBlank()) {
+            getAllCharacters()
+        } else {
+            viewModelScope.launch {
+                val characterSearchResult = characterRepository.getApiCharactersByName(name)
+                _screenStateStream.value = SearchScreenState.Loaded(
+                    charactersResult = characterSearchResult.characters,
+                    isSuccess = characterSearchResult.isSuccess
+                )
             }
         }
     }
