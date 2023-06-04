@@ -1,7 +1,10 @@
 package cz.cvut.fit.biand.homework2.features.characters.presentation.list.favorites
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,14 +21,14 @@ import org.koin.androidx.compose.koinViewModel
 fun FavoritesScreen(
     viewModel: FavoritesViewModel = koinViewModel(),
     navigateToCharacterDetail: (id: String) -> Unit,
-    navigateToSearch: () -> Unit
+    paddingValues: PaddingValues
 ) {
     val screenState by viewModel.screenStateStream.collectAsStateWithLifecycle()
 
     FavoritesScreen(
         screenState = screenState,
         navigateToCharacterDetail = navigateToCharacterDetail,
-        navigateToSearch = navigateToSearch
+        paddingValues = paddingValues,
     )
 }
 
@@ -33,21 +36,25 @@ fun FavoritesScreen(
 private fun FavoritesScreen(
     screenState: FavoritesScreenState,
     navigateToCharacterDetail: (id: String) -> Unit,
-    navigateToSearch: () -> Unit
+    paddingValues: PaddingValues,
 ) {
-    if (screenState.favoriteCharacters.isEmpty()) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Text(
-                text = stringResource(R.string.no_favorite_characters_yet),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.outline,
-                modifier = Modifier.align(Alignment.Center),
+    Column(
+        modifier = Modifier.padding(paddingValues = paddingValues).fillMaxSize()
+    ) {
+        if (screenState.favoriteCharacters.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Text(
+                    text = stringResource(R.string.no_favorite_characters_yet),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.outline,
+                    modifier = Modifier.align(Alignment.Center),
+                )
+            }
+        } else {
+            Characters(
+                characters = screenState.favoriteCharacters,
+                onCharacterClicked = navigateToCharacterDetail,
             )
         }
-    } else {
-        Characters(
-            characters = screenState.favoriteCharacters,
-            onCharacterClicked = navigateToCharacterDetail,
-        )
     }
 }

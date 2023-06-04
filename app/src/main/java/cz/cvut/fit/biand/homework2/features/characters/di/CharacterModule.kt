@@ -9,6 +9,7 @@ import cz.cvut.fit.biand.homework2.features.characters.data.api.CharacterRetrofi
 import cz.cvut.fit.biand.homework2.features.characters.data.db.CharacterRoomDataSource
 import cz.cvut.fit.biand.homework2.features.characters.presentation.detail.CharacterDetailViewModel
 import cz.cvut.fit.biand.homework2.features.characters.presentation.list.characters.ListViewModel
+import cz.cvut.fit.biand.homework2.features.characters.presentation.list.favorites.FavoritesViewModel
 import cz.cvut.fit.biand.homework2.features.characters.presentation.search.SearchViewModel
 import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.core.module.dsl.factoryOf
@@ -26,6 +27,7 @@ val characterModule get() = module {
     //factoryOf(::GetSearchResultsUseCase)
 
     viewModelOf(::ListViewModel)
+    viewModelOf(::FavoritesViewModel)
     viewModelOf(::CharacterDetailViewModel)
     viewModelOf(::SearchViewModel)
 

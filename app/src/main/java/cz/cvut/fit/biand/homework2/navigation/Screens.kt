@@ -6,7 +6,7 @@ import cz.cvut.fit.biand.homework2.R
 
 sealed class Screens(val route: String) {
 
-    object ListScreen : Screens("list")
+    object BottomNavScreen : Screens("bottom_nav")
     class DetailScreen(characterId: String) : Screens("characters/$characterId") {
 
         companion object {

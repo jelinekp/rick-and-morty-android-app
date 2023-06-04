@@ -23,7 +23,7 @@ class CharacterRepository(
             }
             characterLocalDataSource.insert(charactersWithFavorites)
             CharactersResult(
-                characterLocalDataSource.getCharacters(), // TODO: replace characterLocalDataSource.getCharacters() with a flow of "charactersWithFavorites"
+                characterLocalDataSource.getCharacters(),
                 isSuccess = true
             )
         } catch (t: Throwable) {
