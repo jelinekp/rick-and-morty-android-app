@@ -24,6 +24,11 @@ val RickAndMortyTypography = Typography(
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
     ),
+    labelLarge = TextStyle(
+        fontFamily = InterFont,
+        fontWeight = FontWeight.Bold,
+        fontSize = 16.sp,
+    ),
     titleMedium = TextStyle(
         fontFamily = InterFont,
         fontWeight = FontWeight.Bold,

@@ -7,13 +7,16 @@ import kotlinx.coroutines.flow.Flow
 interface CharacterDao {
 
     @Query("SELECT * FROM characters")
-    fun getAllCharacters(): Flow<List<DbCharacter>>
+    fun getAllCharactersFlow(): Flow<List<DbCharacter>>
 
     @Query("SELECT * FROM characters WHERE is_favorite = 1")
-    fun getFavoriteCharacters(): Flow<List<DbCharacter>>
+    fun getFavoriteCharactersFlow(): Flow<List<DbCharacter>>
 
     @Query("SELECT * FROM characters WHERE id = :id")
-    fun getCharacter(id: String): Flow<DbCharacter?>
+    fun getCharacterFlow(id: String): Flow<DbCharacter?>
+    
+    @Query("SELECT * FROM characters WHERE id = :id")
+    suspend fun getCharacter(id: String): DbCharacter?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(dbCharacters: List<DbCharacter>)

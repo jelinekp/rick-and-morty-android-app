@@ -5,11 +5,13 @@ import kotlinx.coroutines.flow.Flow
 
 interface CharacterLocalDataSource {
 
-    fun getCharacters(): Flow<List<Character>>
-
-    fun getFavoriteCharacters(): Flow<List<Character>>
-
-    fun getCharacter(id: String): Flow<Character?>
+    fun getCharactersFlow(): Flow<List<Character>>
+    
+    fun getFavoriteCharactersFlow(): Flow<List<Character>>
+    
+    fun getCharacterFlow(id: String): Flow<Character?>
+    
+    suspend fun getCharacterById(id: String): Character?
 
     suspend fun isCharacterFavorite(id: String): Boolean
 

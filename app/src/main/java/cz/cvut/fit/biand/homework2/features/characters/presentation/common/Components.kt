@@ -48,14 +48,15 @@ fun LoadingState() {
  */
 @Composable
 fun FavoriteIconIndicator(
-    isFavorite: Boolean
+    isFavorite: Boolean,
+    modifier: Modifier = Modifier,
 ) {
     if (isFavorite) {
         androidx.compose.material.Icon(
             painter = painterResource(id = R.drawable.ic_favorites_filled),
             contentDescription = stringResource(id = R.string.characterIsInFavorites),
             tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
+            modifier = modifier
                 .padding(start = 5.dp, top = 5.dp)
                 .size(14.dp)
         )

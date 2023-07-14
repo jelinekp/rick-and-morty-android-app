@@ -3,7 +3,6 @@ package cz.cvut.fit.biand.homework2.features.characters.presentation.search
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.text.KeyboardActions
@@ -139,13 +138,14 @@ private fun SearchTopBarTitle(
 
     TextField(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .onFocusChanged { focusState ->
                 showClearButton = (focusState.isFocused)
             }
             .focusRequester(focusRequester = focusRequester),
         value = textFieldValue,
         onValueChange = onSearchTextChanged,
+        textStyle = MaterialTheme.typography.labelLarge,
         placeholder = {
             Box {
                 Text(

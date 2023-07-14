@@ -7,26 +7,30 @@ import kotlinx.coroutines.flow.map
 
 class CharacterRoomDataSource(private val characterDao: CharacterDao) : CharacterLocalDataSource {
 
-    override fun getCharacters(): Flow<List<Character>> {
-        return characterDao.getAllCharacters().map { dbCharacterList ->
+    override fun getCharactersFlow(): Flow<List<Character>> {
+        return characterDao.getAllCharactersFlow().map { dbCharacterList ->
             dbCharacterList.map { dbCharacter ->
                 dbCharacter.toCharacter()
             }
         }
     }
 
-    override fun getFavoriteCharacters(): Flow<List<Character>> {
-        return characterDao.getFavoriteCharacters().map { dbCharacterList ->
+    override fun getFavoriteCharactersFlow(): Flow<List<Character>> {
+        return characterDao.getFavoriteCharactersFlow().map { dbCharacterList ->
             dbCharacterList.map { dbCharacter ->
                 dbCharacter.toCharacter()
             }
         }
     }
 
-    override fun getCharacter(id: String): Flow<Character?> {
-        return characterDao.getCharacter(id).map { it?.toCharacter() }
+    override fun getCharacterFlow(id: String): Flow<Character?> {
+        return characterDao.getCharacterFlow(id).map { it?.toCharacter() }
     }
-
+    
+    override suspend fun getCharacterById(id: String): Character? {
+        return characterDao.getCharacter(id)?.toCharacter()
+    }
+    
     override suspend fun isCharacterFavorite(id: String): Boolean {
         return characterDao.isCharacterFavorite(id)
     }

@@ -215,8 +215,8 @@ fun CharacterCardContent(character: Character) {
             .padding(all = 10.dp),
     ) {
         Row {
-            Text(text = character.name, style = MaterialTheme.typography.titleSmall)
-            FavoriteIconIndicator(character.isFavorite)
+            Text(text = character.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(7f, fill = false))
+            FavoriteIconIndicator(isFavorite = character.isFavorite, modifier = Modifier.weight(1f))
         }
         Text(text = character.status, style = MaterialTheme.typography.displayMedium)
     }

@@ -2,7 +2,6 @@ package cz.cvut.fit.biand.homework2.features.characters.data
 
 import cz.cvut.fit.biand.homework2.features.characters.model.Character
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOf
 
 class CharacterRepository(
@@ -23,24 +22,24 @@ class CharacterRepository(
             }
             characterLocalDataSource.insert(charactersWithFavorites)
             CharactersResult(
-                characterLocalDataSource.getCharacters(),
+                characterLocalDataSource.getCharactersFlow(),
                 isSuccess = true
             )
         } catch (t: Throwable) {
-            CharactersResult(characterLocalDataSource.getCharacters(), isSuccess = false)
+            CharactersResult(characterLocalDataSource.getCharactersFlow(), isSuccess = false)
         }
     }
 
     fun getFavoriteCharacters(): Flow<List<Character>> {
-        return characterLocalDataSource.getFavoriteCharacters()
+        return characterLocalDataSource.getFavoriteCharactersFlow()
     }
 
     /**
      * Loading the character from Retrofit, when it is not in local Room database
      */
     suspend fun getCharacter(id: String): Flow<Character?> {
-        val localCharacter = characterLocalDataSource.getCharacter(id)
-        return if (localCharacter.firstOrNull() != null) localCharacter
+        val localCharacter = characterLocalDataSource.getCharacterById(id)
+        return if (localCharacter != null) characterLocalDataSource.getCharacterFlow(id)
         else {
             val remoteCharacter =
                 characterRemoteDataSource.getCharacterById(id.toInt())?.copy(isFavorite = false)
@@ -48,7 +47,7 @@ class CharacterRepository(
                 characterLocalDataSource.insert(listOf(remoteCharacter))
             else
                 flowOf(Character.emptyCharacter)
-            characterLocalDataSource.getCharacter(id)
+            characterLocalDataSource.getCharacterFlow(id)
         }
     }
 
