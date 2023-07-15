@@ -11,7 +11,7 @@ Characters are loaded using Retrofit and stored in local Room database.
 Koin is used as a dependency injection framework.
 
 App has four screens:
-- Character list - loaded from local database with updates from [API endpoint](https://rickandmortyapi.com/api/character) (only the first page)
+- Character list - list of Rick And Morty characters (LazyColumn) loaded from local database with updates from [API endpoint](https://rickandmortyapi.com/api/character) (only the first page)
 - Favorites list - list of favorite characters (user defined, favorite information is stored only locally and is not override with changes from API)
 - Detail screen - provides detail information about character with possibility to add to / remove from favorites
 - Search screen - search among all the characters from [special search API endpoint](https://rickandmortyapi.com/documentation/#filter-characters), not overriding favorites information stored locally
